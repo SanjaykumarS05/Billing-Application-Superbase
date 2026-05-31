@@ -1,6 +1,5 @@
-import { allowLocalStorageFallback, isSupabaseConfigured, supabase, supabaseTableName } from './supabase.js';
+import { isSupabaseConfigured, supabase, supabaseTableName } from './supabase.js';
 
-const STORAGE_KEY = 'gst-billing-web-state-v1';
 const REMOTE_STATE_ID = 'default';
 const PASSWORD_SALT = 'gst-local-app-v2';
 const ADMIN_USERNAME = 'admin';
@@ -212,15 +211,6 @@ function normalizeState(raw) {
   };
 }
 
-function readLocalState() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? normalizeState(JSON.parse(stored)) : null;
-  } catch {
-    return null;
-  }
-}
-
 async function ensureDefaultAdmin(state) {
   if (state.users.length > 0) {
     return false;
@@ -238,29 +228,6 @@ async function ensureDefaultAdmin(state) {
   });
   state.counters.users = Math.max(Number(state.counters.users || 0), 1);
   return true;
-}
-
-function migrateEmptyServerTablesFromLocal(serverState, localState) {
-  if (!localState) {
-    return false;
-  }
-
-  let changed = false;
-  ['customers', 'products', 'bills'].forEach((key) => {
-    if (serverState[key].length === 0 && localState[key].length > 0) {
-      serverState[key] = [...localState[key]];
-      serverState.counters[key] = Math.max(Number(serverState.counters[key] || 0), Number(localState.counters[key] || 0));
-      changed = true;
-    }
-  });
-
-  const serverHasCustomSettings = JSON.stringify(serverState.settings) !== JSON.stringify(defaultSettings);
-  if (!serverHasCustomSettings && JSON.stringify(localState.settings) !== JSON.stringify(defaultSettings)) {
-    serverState.settings = { ...defaultSettings, ...localState.settings };
-    changed = true;
-  }
-
-  return changed;
 }
 
 function publicUser(user) {
@@ -336,16 +303,13 @@ async function loadAuthState() {
       const serverState = await loadRemoteState(REMOTE_STATE_ID);
       if (serverState) {
         authStateCache = serverState;
-        const localState = readLocalState();
-        const migrated = migrateEmptyServerTablesFromLocal(authStateCache, localState);
         const repairedAdmin = await ensureDefaultAdmin(authStateCache);
-        if (migrated || repairedAdmin) {
+        if (repairedAdmin) {
           await saveRemoteState(REMOTE_STATE_ID, authStateCache);
         }
         return authStateCache;
       }
-      const localState = readLocalState();
-      authStateCache = localState || await defaultState();
+      authStateCache = await defaultState();
       await ensureDefaultAdmin(authStateCache);
       await saveRemoteState(REMOTE_STATE_ID, authStateCache);
       return authStateCache;
@@ -354,17 +318,7 @@ async function loadAuthState() {
     }
   }
 
-  if (!allowLocalStorageFallback) {
-    throw new Error('Supabase is not configured. Fill .env Supabase values to store data on the server.');
-  }
-
-  const stored = readLocalState();
-  authStateCache = stored || await defaultState();
-  await ensureDefaultAdmin(authStateCache);
-  if (!stored) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(authStateCache));
-  }
-  return authStateCache;
+  throw new Error('Supabase is not configured. Fill .env Supabase values to store data on the server.');
 }
 
 async function loadState() {
@@ -398,12 +352,7 @@ async function loadState() {
     }
   }
 
-  if (!allowLocalStorageFallback) {
-    throw new Error('Supabase is not configured. Fill .env Supabase values to store data on the server.');
-  }
-
-  stateCache = await emptyUserState(activeUser);
-  return stateCache;
+  throw new Error('Supabase is not configured. Fill .env Supabase values to store data on the server.');
 }
 
 async function saveState(nextState) {
@@ -418,13 +367,7 @@ async function saveState(nextState) {
       throw supabaseStorageError(error, userDocId());
     }
   } else {
-    if (!allowLocalStorageFallback) {
-      throw new Error('Supabase is not configured. Fill .env Supabase values to store data on the server.');
-    }
-    if (isAdminUser()) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateCache));
-      authStateCache = stateCache;
-    }
+    throw new Error('Supabase is not configured. Fill .env Supabase values to store data on the server.');
   }
   return stateCache;
 }
@@ -441,10 +384,7 @@ async function saveAuthState(nextAuthState) {
       throw supabaseStorageError(error, REMOTE_STATE_ID);
     }
   } else {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(authStateCache));
-    if (isAdminUser()) {
-      stateCache = authStateCache;
-    }
+    throw new Error('Supabase is not configured. Fill .env Supabase values to store data on the server.');
   }
   return authStateCache;
 }

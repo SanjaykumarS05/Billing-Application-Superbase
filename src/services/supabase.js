@@ -8,7 +8,6 @@ const supabaseUrl = envValue('VITE_SUPABASE_URL');
 const supabaseAnonKey = envValue('VITE_SUPABASE_ANON_KEY');
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
-export const allowLocalStorageFallback = envValue('VITE_ALLOW_LOCAL_STORAGE_FALLBACK') === 'true';
 export const supabaseTableName = envValue('VITE_SUPABASE_TABLE_NAME') || 'billing_states';
 
 export const supabase = isSupabaseConfigured
