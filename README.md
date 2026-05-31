@@ -10,7 +10,27 @@ npm run build
 npm run preview
 ```
 
-Copy `.env.example` to `.env` and fill `VITE_SUPABASE_URL` plus `VITE_SUPABASE_ANON_KEY` to store data in Supabase. With `VITE_ALLOW_LOCAL_STORAGE_FALLBACK=true`, the app can still run locally without Supabase credentials.
+Copy `.env.example` to `.env` and fill `VITE_SUPABASE_URL` plus `VITE_SUPABASE_ANON_KEY` to store data in Supabase.
+
+## Vercel Deployment
+
+The repo includes `vercel.json`, so Vercel can deploy with these settings automatically:
+
+```text
+Install Command: npm ci
+Build Command: npm run build
+Output Directory: web-dist
+Framework Preset: Vite
+Node.js: 20.19 or newer
+```
+
+Add these environment variables in Vercel Project Settings:
+
+```text
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+VITE_SUPABASE_TABLE_NAME=billing_states
+```
 
 ## Supabase Table
 

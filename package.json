@@ -2,6 +2,9 @@
   "name": "bill-application",
   "version": "1.0.0",
   "description": "Billing Software",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "start": "vite --host 0.0.0.0",
