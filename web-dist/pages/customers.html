@@ -1,0 +1,65 @@
+<section id="customersPage" class="page hidden">
+  <div class="main-grid single">
+    <article class="card panel">
+      <h3>Add Customer</h3>
+      <form id="customerForm" class="stack compact">
+        <div class="grid two">
+          <label>
+            Customer Name
+            <input id="custName" type="text" required />
+          </label>
+          <label>
+            GSTIN
+            <input id="custGstin" type="text" />
+          </label>
+        </div>
+        <div class="grid three">
+          <label>
+            State
+            <select id="custState"></select>
+          </label>
+          <label>
+            Phone
+            <input id="custPhone" type="text" />
+          </label>
+          <label>
+            Email
+            <input id="custEmail" type="email" />
+          </label>
+        </div>
+        <label>
+          Address
+          <textarea id="custAddress" rows="3"></textarea>
+        </label>
+        <div class="form-actions">
+          <button id="customerSubmitBtn" class="btn primary" type="submit">Save Customer</button>
+          <button id="customerCancelEditBtn" class="btn ghost hidden" type="button">Cancel Edit</button>
+        </div>
+        <p id="customerMessage" class="message"></p>
+      </form>
+    </article>
+
+    <article class="card panel">
+      <h3>Customer List</h3>
+      <div class="search-row">
+        <input id="customerSearchInput" type="text" placeholder="Search name, GSTIN, state, phone or email" />
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>GSTIN</th>
+              <th>State</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="customersTableBody"></tbody>
+        </table>
+      </div>
+      <div id="customerPagination" class="pagination-row"></div>
+    </article>
+  </div>
+</section>

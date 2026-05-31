@@ -1,0 +1,135 @@
+<section id="billingPage" class="page visible">
+  <div class="main-grid single">
+    <article class="card panel">
+      <h3>Create Invoice</h3>
+      <form id="billForm" class="stack compact">
+        <div class="grid two">
+          <label>
+            Customer
+            <input id="customerName" list="customerList" type="text" required />
+            <datalist id="customerList"></datalist>
+          </label>
+          <label>
+            Customer GSTIN
+            <input id="customerGstin" type="text" placeholder="Auto-fill if customer exists" />
+          </label>
+        </div>
+        <div class="grid two">
+          <label>
+            Buyer Address
+            <textarea id="customerAddress" rows="2"></textarea>
+          </label>
+          <label>
+            State
+            <select id="customerState"></select>
+          </label>
+        </div>
+        <div class="grid three">
+          <label>
+            Contact Number
+            <input id="customerPhone" type="text" />
+          </label>
+          <label>
+            Buyer Email
+            <input id="customerEmail" type="email" />
+          </label>
+          <label>
+            e-Way Bill No
+            <input id="eWayBillNo" type="text" />
+          </label>
+        </div>
+
+        <div class="grid two">
+          <label>
+            Bill Date
+            <input id="billDate" type="date" required />
+          </label>
+          <label>
+            Supply Type
+            <select id="taxMode">
+              <option value="intra">Intra-state (CGST + SGST)</option>
+              <option value="inter">Inter-state (IGST)</option>
+              <option value="none">No Tax</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="row-head details-head">
+          <button id="toggleDetailsBtn" type="button" class="btn ghost">+ Add Details</button>
+        </div>
+        <div id="invoiceDetailsSection" class="invoice-details hidden">
+          <div class="grid two">
+            <label>
+              Delivery Note
+              <input id="deliveryNote" type="text" />
+            </label>
+            <label>
+              Reference No. &amp; Date
+              <input id="referenceNoDate" type="text" />
+            </label>
+          </div>
+          <div class="grid two">
+            <label>
+              Other References
+              <input id="otherReferences" type="text" />
+            </label>
+            <label>
+              Buyer's Order No.
+              <input id="buyersOrderNo" type="text" />
+            </label>
+          </div>
+          <div class="grid two">
+            <label>
+              Buyer's Order Date
+              <input id="buyersOrderDate" type="date" />
+            </label>
+            <label>
+              Dispatch Doc No.
+              <input id="dispatchDocNo" type="text" />
+            </label>
+          </div>
+          <div class="grid two">
+            <label>
+              Delivery Note Date
+              <input id="deliveryNoteDate" type="date" />
+            </label>
+            <label>
+              Dispatched Through
+              <input id="dispatchedThrough" type="text" />
+            </label>
+          </div>
+          <div class="grid two">
+            <label>
+              Destination
+              <input id="destination" type="text" />
+            </label>
+            <label>
+              Terms of Delivery
+              <input id="termsOfDelivery" type="text" />
+            </label>
+          </div>
+        </div>
+
+        <div class="row-head">
+          <h4>Invoice Items</h4>
+        </div>
+        <div id="itemsList" class="item-list"></div>
+
+        <div class="totals">
+          <div><span>Taxable</span><strong id="subtotalVal">0.00</strong></div>
+          <div><span>CGST</span><strong id="cgstVal">0.00</strong></div>
+          <div><span>SGST</span><strong id="sgstVal">0.00</strong></div>
+          <div><span>IGST</span><strong id="igstVal">0.00</strong></div>
+          <div class="grand"><span>Total</span><strong id="totalVal">0.00</strong></div>
+        </div>
+
+        <div class="grid two">
+          <button class="btn ghost" type="submit" data-action="save">Save</button>
+          <button class="btn primary" type="submit" data-action="save-print">Save &amp; Print</button>
+        </div>
+        <p id="billMessage" class="message"></p>
+      </form>
+    </article>
+  </div>
+</section>
+
