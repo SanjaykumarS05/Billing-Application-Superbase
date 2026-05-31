@@ -1,0 +1,48 @@
+<section id="dashboardPage" class="page visible">
+  <div class="main-grid single">
+    <article class="card panel">
+      <h3>Dashboard</h3>
+      <div class="dashboard-metrics">
+        <div class="metric-card">
+          <span class="metric-label">Total Invoices</span>
+          <strong id="dashInvoiceCount">0</strong>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Customers</span>
+          <strong id="dashCustomerCount">0</strong>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Products</span>
+          <strong id="dashProductCount">0</strong>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">Overall Value</span>
+          <strong id="dashInvoiceValue">0.00</strong>
+        </div>
+        <div class="metric-card">
+          <span class="metric-label">This Month Value</span>
+          <strong id="dashMonthValue">0.00</strong>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <input id="dashSearchInput" type="text" placeholder="Search invoice, customer, date or amount" />
+        <input id="dashDateFrom" type="date" />
+        <input id="dashDateTo" type="date" />
+        <button id="dashResetFilterBtn" class="btn ghost" type="button">Reset</button>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="card mini-card">
+          <h4>Recent Invoices</h4>
+          <div id="dashRecentInvoices" class="list-box"></div>
+        </div>
+
+        <div class="card mini-card">
+          <div id="dashNextInvoices" class="list-box"></div>
+        </div>
+      </div>
+      <div id="dashPagination" class="pagination-row"></div>
+    </article>
+  </div>
+</section>
