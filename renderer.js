@@ -35,6 +35,13 @@ const welcomeUser = document.getElementById('welcomeUser');
 const pageButtons = document.querySelectorAll('.tab-btn');
 const pages = document.querySelectorAll('.page');
 
+// Hide both main screens until session restore is complete,
+// so the login page does not flash briefly on refresh.
+loginScreen.classList.remove('visible');
+loginScreen.classList.add('hidden');
+appScreen.classList.remove('visible');
+appScreen.classList.add('hidden');
+
 const billForm = document.getElementById('billForm');
 const toggleDetailsBtn = document.getElementById('toggleDetailsBtn');
 const invoiceDetailsSection = document.getElementById('invoiceDetailsSection');
