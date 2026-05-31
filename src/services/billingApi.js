@@ -290,7 +290,6 @@ function userDocId(user = currentUser) {
   return isAdminUser(user) ? REMOTE_STATE_ID : `user-${Number(user?.id || 0)}`;
 }
 
-<<<<<<< HEAD
 function supabaseStorageError(error, stateId) {
   const message = String(error?.message || error || 'Unknown Supabase error');
   const missingTable = /Could not find the table|does not exist|schema cache/i.test(message);
@@ -300,8 +299,6 @@ function supabaseStorageError(error, stateId) {
   return new Error(`Supabase server storage failed: ${message}. Check table public.${supabaseTableName} allows reading and writing ${stateId}.${setupHint}`);
 }
 
-=======
->>>>>>> 482d668a932406907c4d329f0e3c8e89a5380a3f
 async function loadRemoteState(stateId) {
   const { data, error } = await supabase
     .from(supabaseTableName)
@@ -353,11 +350,7 @@ async function loadAuthState() {
       await saveRemoteState(REMOTE_STATE_ID, authStateCache);
       return authStateCache;
     } catch (error) {
-<<<<<<< HEAD
       throw supabaseStorageError(error, REMOTE_STATE_ID);
-=======
-      throw new Error(`Supabase server storage failed: ${error.message}. Check table ${supabaseTableName} allows reading and writing ${REMOTE_STATE_ID}.`);
->>>>>>> 482d668a932406907c4d329f0e3c8e89a5380a3f
     }
   }
 
@@ -401,11 +394,7 @@ async function loadState() {
       await saveRemoteState(activeUserDocId, stateCache);
       return stateCache;
     } catch (error) {
-<<<<<<< HEAD
       throw supabaseStorageError(error, userDocId(activeUser));
-=======
-      throw new Error(`Supabase server storage failed: ${error.message}. Check table ${supabaseTableName} allows reading and writing ${userDocId(activeUser)}.`);
->>>>>>> 482d668a932406907c4d329f0e3c8e89a5380a3f
     }
   }
 
@@ -426,11 +415,7 @@ async function saveState(nextState) {
         authStateCache = stateCache;
       }
     } catch (error) {
-<<<<<<< HEAD
       throw supabaseStorageError(error, userDocId());
-=======
-      throw new Error(`Supabase server storage failed: ${error.message}. Check table ${supabaseTableName} allows reading and writing ${userDocId()}.`);
->>>>>>> 482d668a932406907c4d329f0e3c8e89a5380a3f
     }
   } else {
     if (!allowLocalStorageFallback) {
@@ -453,11 +438,7 @@ async function saveAuthState(nextAuthState) {
         stateCache = authStateCache;
       }
     } catch (error) {
-<<<<<<< HEAD
       throw supabaseStorageError(error, REMOTE_STATE_ID);
-=======
-      throw new Error(`Supabase server storage failed: ${error.message}. Check table ${supabaseTableName} allows reading and writing ${REMOTE_STATE_ID}.`);
->>>>>>> 482d668a932406907c4d329f0e3c8e89a5380a3f
     }
   } else {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(authStateCache));
@@ -735,11 +716,7 @@ export const billingApi = {
         return {
           success: true,
           user: publicUser(user),
-<<<<<<< HEAD
           message: `User added, but user storage setup failed: ${supabaseStorageError(error, userDocId(user)).message}`
-=======
-          message: `User added, but user storage setup failed: ${error.message}`
->>>>>>> 482d668a932406907c4d329f0e3c8e89a5380a3f
         };
       }
     }
