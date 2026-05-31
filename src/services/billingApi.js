@@ -30,6 +30,81 @@ const defaultSettings = {
 let stateCache = null;
 let authStateCache = null;
 let currentUser = null;
+const SESSION_STORAGE_KEY = 'gstBillingCurrentUser';
+
+function loadStoredUser() {
+  if (typeof localStorage === 'undefined') {
+    return null;
+  }
+  try {
+    const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!raw) {
+      return null;
+    }
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.id || !parsed.username) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function saveStoredUser(user) {
+  if (typeof localStorage === 'undefined') {
+    return;
+  }
+  try {
+    if (!user) {
+      localStorage.removeItem(SESSION_STORAGE_KEY);
+      return;
+    }
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify({
+      id: user.id,
+      username: user.username
+    }));
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
+function clearStoredUser() {
+  if (typeof localStorage === 'undefined') {
+    return;
+  }
+  try {
+    localStorage.removeItem(SESSION_STORAGE_KEY);
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
+async function restoreSession() {
+  const storedUser = loadStoredUser();
+  if (!storedUser) {
+    return null;
+  }
+
+  const authState = await loadAuthState();
+  const user = authState.users.find((row) => Number(row.id) === Number(storedUser.id) && row.username === storedUser.username && row.active !== false);
+  if (!user) {
+    clearStoredUser();
+    return null;
+  }
+
+  currentUser = publicUser(user);
+  stateCache = null;
+  await loadState();
+  return currentUser;
+}
+
+async function logout() {
+  currentUser = null;
+  stateCache = null;
+  clearStoredUser();
+  return { success: true };
+}
 
 const SHA256_K = [
   0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -587,9 +662,18 @@ export const billingApi = {
       return { success: false, message: 'User deactive. Contact admin.' };
     }
     currentUser = publicUser(user);
+    saveStoredUser(currentUser);
     stateCache = null;
     await loadState();
     return { success: true, user: currentUser };
+  },
+
+  async restoreSession() {
+    return restoreSession();
+  },
+
+  async logout() {
+    return logout();
   },
 
   async changePassword(payload) {

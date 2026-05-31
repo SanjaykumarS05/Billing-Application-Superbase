@@ -629,16 +629,49 @@ async function downloadBillById(billId, buttonEl = null) {
   setMessage(billMessage, `Invoice downloaded: ${result.filePath}`, 'success');
 }
 
-function showPage(pageId) {
+function showPage(pageId, options = { pushState: true }) {
+  const targetPageId = String(pageId || '').trim();
+  if (!targetPageId) {
+    return;
+  }
+
   pages.forEach((page) => {
-    page.classList.toggle('visible', page.id === pageId);
-    page.classList.toggle('hidden', page.id !== pageId);
+    page.classList.toggle('visible', page.id === targetPageId);
+    page.classList.toggle('hidden', page.id !== targetPageId);
   });
 
   pageButtons.forEach((button) => {
-    button.classList.toggle('active', button.dataset.page === pageId);
+    button.classList.toggle('active', button.dataset.page === targetPageId);
   });
+
+  if (options.pushState) {
+    const newHash = `#${targetPageId}`;
+    if (window.location.hash !== newHash) {
+      window.history.pushState({ page: targetPageId }, '', newHash);
+    } else {
+      window.history.replaceState({ page: targetPageId }, '', newHash);
+    }
+  }
 }
+
+function getRoutePage() {
+  const requested = String(window.location.hash || '').replace(/^#/, '').trim();
+  const validPage = Array.from(pageButtons).map((button) => button.dataset.page).find((pageId) => pageId === requested);
+  return validPage || 'dashboardPage';
+}
+
+function setLoginRoute() {
+  if (window.location.hash !== '#login') {
+    window.history.pushState({ page: 'login' }, '', '#login');
+  }
+}
+
+window.addEventListener('popstate', () => {
+  if (currentUser) {
+    const pageId = getRoutePage();
+    showPage(pageId, { pushState: false });
+  }
+});
 
 function isCurrentUserAdmin() {
   return currentUser?.role === 'admin' || currentUser?.username === 'admin';
@@ -1663,7 +1696,7 @@ loginForm.addEventListener('submit', async (event) => {
 
   currentUser = result.user;
   showApp(currentUser);
-  showPage('dashboardPage');
+  showPage(getRoutePage());
   await bootstrapAppData();
   if (itemsList.children.length === 0) {
     addItemRow();
@@ -1673,8 +1706,10 @@ loginForm.addEventListener('submit', async (event) => {
   updateTotals();
 });
 
-logoutBtn.addEventListener('click', () => {
+logoutBtn.addEventListener('click', async () => {
+  await window.billingApi.logout();
   showLogin();
+  setLoginRoute();
 });
 
 toggleDetailsBtn.addEventListener('click', () => {
@@ -2035,6 +2070,18 @@ populateStateDropdown(customerStateEl);
 populateStateDropdown(custState);
 populateStateDropdown(profileState);
 updateTotals();
-showLogin();
+
+const persistedUser = await window.billingApi.restoreSession();
+if (persistedUser) {
+  currentUser = persistedUser;
+  showApp(currentUser);
+  showPage(getRoutePage(), { pushState: true });
+  await bootstrapAppData();
+  if (itemsList.children.length === 0) {
+    addItemRow();
+  }
+} else {
+  showLogin();
+}
 
 })();
