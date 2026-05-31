@@ -1,0 +1,29 @@
+<section id="invoicesPage" class="page hidden">
+  <div class="main-grid single">
+    <article class="card panel">
+      <h3>Recent Invoices</h3>
+      <div class="filter-row">
+        <input id="invoiceSearchInput" type="text" placeholder="Search invoice, customer, date or amount" />
+        <input id="invoiceDateFrom" type="date" />
+        <input id="invoiceDateTo" type="date" />
+        <button id="invoiceResetFilterBtn" class="btn ghost" type="button">Reset</button>
+        <button id="invoiceExportBtn" class="btn ghost" type="button">Download Excel</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Invoice</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Total</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="billsTableBody"></tbody>
+        </table>
+      </div>
+      <div id="invoicePagination" class="pagination-row"></div>
+    </article>
+  </div>
+</section>
