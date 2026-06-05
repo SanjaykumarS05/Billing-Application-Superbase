@@ -18,7 +18,12 @@ export default function App() {
           </label>
           <label>
             Password
-            <input id="password" type="password" placeholder="admin123" defaultValue="admin123" required />
+            <div className="password-input-wrapper">
+              <input id="password" type="password" placeholder="admin123" defaultValue="admin123" required />
+              <button id="togglePassword" className="password-toggle" type="button" title="Show/Hide password">
+                <span className="eye-icon">👁️</span>
+              </button>
+            </div>
           </label>
           <button className="btn primary" type="submit">Login</button>
         </form>

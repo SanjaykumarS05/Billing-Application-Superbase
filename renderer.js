@@ -1681,6 +1681,26 @@ createBackupBtn?.addEventListener('click', async () => {
   setMessage(backupMessageEl, successText, result.mailSent === false ? 'error' : 'success');
 });
 
+// Password visibility toggle
+const passwordInput = document.getElementById('password');
+const togglePasswordBtn = document.getElementById('togglePassword');
+
+if (togglePasswordBtn && passwordInput) {
+  togglePasswordBtn.addEventListener('click', (event) => {
+    event.preventDefault();
+    
+    if (passwordInput.type === 'password') {
+      passwordInput.type = 'text';
+      togglePasswordBtn.innerHTML = '<span class="eye-icon">🙈</span>';
+      togglePasswordBtn.title = 'Hide password';
+    } else {
+      passwordInput.type = 'password';
+      togglePasswordBtn.innerHTML = '<span class="eye-icon">👁️</span>';
+      togglePasswordBtn.title = 'Show password';
+    }
+  });
+}
+
 loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   setMessage(loginMessage, '');
