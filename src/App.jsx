@@ -7,7 +7,7 @@ export default function App() {
 
   return (
     <main className="app-wrap">
-      <section id="loginScreen" className="card login-card visible">
+      <section id="loginScreen" className="card login-card hidden">
         <h1>GST Billing</h1>
 
         <form id="loginForm" className="stack">

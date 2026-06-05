@@ -2224,7 +2224,12 @@ populateStateDropdown(custState);
 populateStateDropdown(profileState);
 updateTotals();
 
-const persistedUser = await window.billingApi.restoreSession();
+let persistedUser = null;
+try {
+  persistedUser = await window.billingApi.restoreSession();
+} catch (error) {
+  console.error('Session restore failed:', error);
+}
 if (persistedUser) {
   currentUser = persistedUser;
   showApp(currentUser);
