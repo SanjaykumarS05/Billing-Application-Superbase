@@ -160,6 +160,8 @@ const passwordUsername = document.getElementById('passwordUsername');
 const newPassword = document.getElementById('newPassword');
 const confirmPassword = document.getElementById('confirmPassword');
 const passwordMessage = document.getElementById('passwordMessage');
+const passwordSaveBtn = passwordForm?.querySelector('button[type="submit"]');
+let passwordMessageTimer = null;
 const usersSettingsTabLabel = document.getElementById('usersSettingsTabLabel');
 const settingsUsersPanel = document.getElementById('settingsUsers');
 const addUserBtn = document.getElementById('addUserBtn');
@@ -337,8 +339,21 @@ function populateStateDropdown(selectEl) {
       .join('');
 }
 function setMessage(el, text, type = '') {
+  if (el === passwordMessage && passwordMessageTimer) {
+    clearTimeout(passwordMessageTimer);
+    passwordMessageTimer = null;
+  }
   el.textContent = text;
   el.className = `message ${type}`.trim();
+}
+
+function updatePasswordSaveButtonState() {
+  if (!passwordSaveBtn) {
+    return;
+  }
+  const usernameChanged = currentUser && String(passwordUsername?.value || '').trim() !== String(currentUser.username || '').trim();
+  const passwordChanged = String(newPassword?.value || '').length > 0 || String(confirmPassword?.value || '').length > 0;
+  passwordSaveBtn.disabled = !(usernameChanged || passwordChanged);
 }
 
 function updatePasswordSettingsUsername() {
@@ -348,6 +363,7 @@ function updatePasswordSettingsUsername() {
   passwordUsername.value = currentUser.username;
   newPassword.value = '';
   confirmPassword.value = '';
+  updatePasswordSaveButtonState();
 }
 
 function formatBackupDateTime(value) {
@@ -660,6 +676,10 @@ function showPage(pageId, options = { pushState: true }) {
   pageButtons.forEach((button) => {
     button.classList.toggle('active', button.dataset.page === targetPageId);
   });
+
+  if (targetPageId === 'settingsPage') {
+    selectSettingsTab('profile');
+  }
 
   if (options.pushState) {
     const newHash = `#${targetPageId}`;
@@ -1584,6 +1604,7 @@ pageButtons.forEach((button) => {
       await loadProductSales();
     }
     if (pageId === 'settingsPage') {
+      selectSettingsTab('profile');
       updateUsersAccess();
       if (isCurrentUserAdmin()) {
         await loadUsers();
@@ -1604,6 +1625,10 @@ settingsRadio.forEach((radio) => {
     }
   });
 });
+
+passwordUsername?.addEventListener('input', updatePasswordSaveButtonState);
+newPassword?.addEventListener('input', updatePasswordSaveButtonState);
+confirmPassword?.addEventListener('input', updatePasswordSaveButtonState);
 
 addUserBtn?.addEventListener('click', () => {
   if (!isCurrentUserAdmin()) {
@@ -2177,11 +2202,20 @@ passwordForm.addEventListener('submit', async (event) => {
   if (passwordUsername && currentUser) {
     passwordUsername.value = currentUser.username;
   }
-  setMessage(
-    passwordMessage,
-    isPasswordChange ? 'Username and password updated successfully.' : 'Username updated successfully.',
-    'success'
-  );
+  updatePasswordSaveButtonState();
+
+  const successMessage = isPasswordChange ? 'Username and password updated successfully.' : 'Username updated successfully.';
+  setMessage(passwordMessage, successMessage, 'success');
+  if (passwordMessageTimer) {
+    clearTimeout(passwordMessageTimer);
+  }
+  passwordMessageTimer = setTimeout(() => {
+    if (passwordMessage.textContent === successMessage) {
+      passwordMessage.textContent = '';
+      passwordMessage.className = 'message';
+    }
+    passwordMessageTimer = null;
+  }, 3000);
 });
 
 billDateEl.value = new Date().toISOString().slice(0, 10);

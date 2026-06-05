@@ -283,6 +283,15 @@ input.gray {
   background: linear-gradient(135deg, var(--brand) 0%, #21a876 100%);
 }
 
+.btn.primary:disabled,
+.btn:disabled {
+  background: #014a27;
+  color: #ffffff;
+  border-color: transparent;
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
 .btn.ghost {
   color: var(--brand-2);
   border-color: #b7d4c6;
