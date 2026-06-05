@@ -1696,11 +1696,11 @@ if (togglePasswordBtn && passwordInput) {
     
     if (passwordInput.type === 'password') {
       passwordInput.type = 'text';
-      togglePasswordBtn.innerHTML = '<span class="lock-icon">🔓</span>';
+      togglePasswordBtn.innerHTML = '<span class="material-symbols-outlined">visibility</span>';
       togglePasswordBtn.title = 'Hide password';
     } else {
       passwordInput.type = 'password';
-      togglePasswordBtn.innerHTML = '<span class="lock-icon">🔒</span>';
+      togglePasswordBtn.innerHTML = '<span class="material-symbols-outlined">visibility_off</span>';
       togglePasswordBtn.title = 'Show password';
     }
   });
@@ -1718,7 +1718,7 @@ function startInactivityTimer() {
       passwordInput.value = '';
       passwordInput.type = 'password';
       if (togglePasswordBtn) {
-        togglePasswordBtn.innerHTML = '<span class="lock-icon">🔒</span>';
+        togglePasswordBtn.innerHTML = '<span class="material-symbols-outlined">visibility_off</span>';
         togglePasswordBtn.title = 'Show password';
       }
     }

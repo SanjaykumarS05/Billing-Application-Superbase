@@ -256,6 +256,14 @@ input.gray {
   font-size: 1.1rem;
 }
 
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
+}
+
 .btn {
   border-radius: 10px;
   border: 1px solid transparent;

@@ -9,26 +9,23 @@ export default function App() {
     <main className="app-wrap">
       <section id="loginScreen" className="card login-card visible">
         <h1>GST Billing</h1>
-        <p className="muted">Web invoice software with Supabase storage</p>
 
         <form id="loginForm" className="stack">
           <label>
             Username
-            <input id="username" type="text" placeholder="admin" defaultValue="admin" required />
+            <input id="username" type="text" placeholder="Username" required />
           </label>
           <label>
             Password
             <div className="password-input-wrapper">
-              <input id="password" type="password" placeholder="admin123" defaultValue="admin123" required />
+              <input id="password" type="password" placeholder="Password" required />
               <button id="togglePassword" className="password-toggle" type="button" title="Show password">
-                <span className="lock-icon">🔒</span>
+                <span className="material-symbols-outlined">visibility_off</span>
               </button>
             </div>
           </label>
           <button className="btn primary" type="submit">Login</button>
         </form>
-
-        <p className="hint">Default: <strong>admin / admin123</strong></p>
         <p id="loginMessage" className="message"></p>
       </section>
 
