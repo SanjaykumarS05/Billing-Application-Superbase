@@ -251,8 +251,9 @@ input.gray {
   color: var(--brand);
 }
 
-.password-toggle .eye-icon {
+.password-toggle .lock-icon {
   display: inline-block;
+  font-size: 1.1rem;
 }
 
 .btn {

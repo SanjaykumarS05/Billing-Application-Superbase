@@ -726,9 +726,12 @@ function showApp(user) {
     welcomeUser.textContent = `Logged in as ${user.fullName} (${user.username})`;
   }
   updateUsersAccess();
+  // Start inactivity timer when user logs in
+  startInactivityTimer();
 }
 
 function showLogin() {
+  stopInactivityTimer();
   appScreen.classList.remove('visible');
   appScreen.classList.add('hidden');
   loginScreen.classList.remove('hidden');
@@ -1684,6 +1687,8 @@ createBackupBtn?.addEventListener('click', async () => {
 // Password visibility toggle
 const passwordInput = document.getElementById('password');
 const togglePasswordBtn = document.getElementById('togglePassword');
+let inactivityTimer = null;
+const INACTIVITY_DELAY_MS = 15 * 60 * 1000; // 15 minutes
 
 if (togglePasswordBtn && passwordInput) {
   togglePasswordBtn.addEventListener('click', (event) => {
@@ -1691,15 +1696,69 @@ if (togglePasswordBtn && passwordInput) {
     
     if (passwordInput.type === 'password') {
       passwordInput.type = 'text';
-      togglePasswordBtn.innerHTML = '<span class="eye-icon">🙈</span>';
+      togglePasswordBtn.innerHTML = '<span class="lock-icon">🔓</span>';
       togglePasswordBtn.title = 'Hide password';
     } else {
       passwordInput.type = 'password';
-      togglePasswordBtn.innerHTML = '<span class="eye-icon">👁️</span>';
+      togglePasswordBtn.innerHTML = '<span class="lock-icon">🔒</span>';
       togglePasswordBtn.title = 'Show password';
     }
   });
 }
+
+// Auto-logout after 15 minutes of inactivity
+function startInactivityTimer() {
+  if (inactivityTimer) {
+    clearTimeout(inactivityTimer);
+  }
+  
+  inactivityTimer = setTimeout(() => {
+    // Clear login credentials
+    if (passwordInput) {
+      passwordInput.value = '';
+      passwordInput.type = 'password';
+      if (togglePasswordBtn) {
+        togglePasswordBtn.innerHTML = '<span class="lock-icon">🔒</span>';
+        togglePasswordBtn.title = 'Show password';
+      }
+    }
+    const usernameInput = document.getElementById('username');
+    if (usernameInput) {
+      usernameInput.value = '';
+    }
+    
+    // Logout user
+    showLogin();
+    setMessage(loginMessage, 'Session expired after 15 minutes of inactivity. Please login again.', 'error');
+    setLoginRoute();
+  }, INACTIVITY_DELAY_MS);
+}
+
+function stopInactivityTimer() {
+  if (inactivityTimer) {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = null;
+  }
+}
+
+function resetInactivityTimer() {
+  if (currentUser) {
+    startInactivityTimer();
+  }
+}
+
+// Track user activity
+function handleUserActivity() {
+  if (currentUser) {
+    resetInactivityTimer();
+  }
+}
+
+window.addEventListener('mousemove', handleUserActivity);
+window.addEventListener('mousedown', handleUserActivity);
+window.addEventListener('keydown', handleUserActivity);
+window.addEventListener('touchstart', handleUserActivity);
+window.addEventListener('click', handleUserActivity);
 
 loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();

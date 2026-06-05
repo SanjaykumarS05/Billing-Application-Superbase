@@ -20,8 +20,8 @@ export default function App() {
             Password
             <div className="password-input-wrapper">
               <input id="password" type="password" placeholder="admin123" defaultValue="admin123" required />
-              <button id="togglePassword" className="password-toggle" type="button" title="Show/Hide password">
-                <span className="eye-icon">👁️</span>
+              <button id="togglePassword" className="password-toggle" type="button" title="Show password">
+                <span className="lock-icon">🔒</span>
               </button>
             </div>
           </label>
