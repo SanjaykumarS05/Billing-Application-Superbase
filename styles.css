@@ -119,6 +119,12 @@ h3 {
   gap: 8px;
 }
 
+.user-info {
+  margin: 12px 0 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
 .logout-btn {
   margin-left: auto;
   color: #fff;

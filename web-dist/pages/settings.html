@@ -115,16 +115,22 @@
       </div>
 
       <div id="settingsPassword" class="settings-panel hidden">
-        <form id="passwordForm" class="stack compact">
+        <form id="passwordForm" class="stack compact" autocomplete="off">
+          <input type="text" autocomplete="username" name="fake-username" style="display:none" />
+          <input type="password" autocomplete="current-password" name="fake-password" style="display:none" />
+          <label>
+            Username
+            <input id="passwordUsername" type="text" autocomplete="off" required />
+          </label>
           <label>
             New Password
-            <input id="newPassword" type="password" minlength="6" required />
+            <input id="newPassword" type="password" autocomplete="new-password" minlength="6" />
           </label>
           <label>
             Confirm Password
-            <input id="confirmPassword" type="password" minlength="6" required />
+            <input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" />
           </label>
-          <button class="btn primary" type="submit">Change Password</button>
+          <button class="btn primary" type="submit">Save Login Details</button>
           <p id="passwordMessage" class="message"></p>
         </form>
       </div>

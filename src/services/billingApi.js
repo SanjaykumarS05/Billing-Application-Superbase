@@ -679,18 +679,29 @@ export const billingApi = {
   async changePassword(payload) {
     const state = await loadAuthState();
     const user = state.users.find((row) => Number(row.id) === Number(payload?.userId));
+    const newUsername = String(payload?.newUsername || '').trim();
     const newPassword = String(payload?.newPassword || '');
     if (!currentUser || Number(currentUser.id) !== Number(payload?.userId)) {
       return { success: false, message: 'Please login again.' };
     }
-    if (!user || newPassword.length < 6) {
-      return { success: false, message: 'Password must be at least 6 characters.' };
+    if (!user) {
+      return { success: false, message: 'User not found.' };
     }
-    user.passwordHash = await hashPassword(newPassword);
+    if (!newUsername) {
+      return { success: false, message: 'Username is required.' };
+    }
+    if (state.users.some((row) => row.username.toLowerCase() === newUsername.toLowerCase() && Number(row.id) !== Number(user.id))) {
+      return { success: false, message: 'Username is already in use.' };
+    }
+    user.username = newUsername;
+    if (newPassword.length > 0) {
+      user.passwordHash = await hashPassword(newPassword);
+    }
     await saveAuthState(state);
     if (stateCache?.users) {
       const localUser = stateCache.users.find((row) => Number(row.id) === Number(user.id));
       if (localUser) {
+        localUser.username = user.username;
         localUser.passwordHash = user.passwordHash;
         await saveState(stateCache);
       }

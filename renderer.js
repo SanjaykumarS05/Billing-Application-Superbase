@@ -156,6 +156,7 @@ const taxMessage = document.getElementById('taxMessage');
 let compositionValidDaysEl = document.getElementById('compositionValidDays');
 
 const passwordForm = document.getElementById('passwordForm');
+const passwordUsername = document.getElementById('passwordUsername');
 const newPassword = document.getElementById('newPassword');
 const confirmPassword = document.getElementById('confirmPassword');
 const passwordMessage = document.getElementById('passwordMessage');
@@ -338,6 +339,15 @@ function populateStateDropdown(selectEl) {
 function setMessage(el, text, type = '') {
   el.textContent = text;
   el.className = `message ${type}`.trim();
+}
+
+function updatePasswordSettingsUsername() {
+  if (!currentUser || !passwordUsername || !newPassword || !confirmPassword) {
+    return;
+  }
+  passwordUsername.value = currentUser.username;
+  newPassword.value = '';
+  confirmPassword.value = '';
 }
 
 function formatBackupDateTime(value) {
@@ -697,6 +707,9 @@ function selectSettingsTab(tabName) {
     settingsPanels[key].classList.toggle('visible', key === tabName);
     settingsPanels[key].classList.toggle('hidden', key !== tabName);
   });
+  if (tabName === 'password') {
+    updatePasswordSettingsUsername();
+  }
 }
 
 function updateUsersAccess() {
@@ -722,10 +735,8 @@ function showApp(user) {
   loginScreen.classList.add('hidden');
   appScreen.classList.remove('hidden');
   appScreen.classList.add('visible');
-  if (welcomeUser) {
-    welcomeUser.textContent = `Logged in as ${user.fullName} (${user.username})`;
-  }
   updateUsersAccess();
+  updatePasswordSettingsUsername();
   // Start inactivity timer when user logs in
   startInactivityTimer();
 }
@@ -1587,13 +1598,7 @@ settingsRadio.forEach((radio) => {
       selectSettingsTab('profile');
       return;
     }
-    Object.keys(settingsPanels).forEach((key) => {
-      if (!settingsPanels[key]) {
-        return;
-      }
-      settingsPanels[key].classList.toggle('visible', key === radio.value);
-      settingsPanels[key].classList.toggle('hidden', key !== radio.value);
-    });
+    selectSettingsTab(radio.value);
     if (radio.value === 'users') {
       await loadUsers();
     }
@@ -2126,29 +2131,57 @@ passwordForm.addEventListener('submit', async (event) => {
 
   const nextPassword = newPassword.value;
   const confirm = confirmPassword.value;
+  const newUsername = String(passwordUsername?.value || '').trim();
 
-  if (nextPassword.length < 6) {
-    setMessage(passwordMessage, 'Password must be at least 6 characters.', 'error');
+  if (!newUsername) {
+    setMessage(passwordMessage, 'Username is required.', 'error');
     return;
   }
 
-  if (nextPassword !== confirm) {
-    setMessage(passwordMessage, 'New password and confirm password must match.', 'error');
-    return;
+  const isPasswordChange = nextPassword.length > 0 || confirm.length > 0;
+  if (isPasswordChange) {
+    if (nextPassword.length < 6) {
+      setMessage(passwordMessage, 'Password must be at least 6 characters.', 'error');
+      return;
+    }
+    if (nextPassword !== confirm) {
+      setMessage(passwordMessage, 'New password and confirm password must match.', 'error');
+      return;
+    }
   }
 
   const result = await window.billingApi.changePassword({
     userId: currentUser.id,
-    newPassword: nextPassword
+    newUsername,
+    newPassword: isPasswordChange ? nextPassword : undefined
   });
 
   if (!result.success) {
-    setMessage(passwordMessage, result.message || 'Password update failed.', 'error');
+    setMessage(passwordMessage, result.message || 'Unable to save login details.', 'error');
     return;
   }
 
+  if (passwordUsername && currentUser) {
+    currentUser.username = newUsername;
+    try {
+      localStorage.setItem('gstBillingCurrentUser', JSON.stringify({
+        id: currentUser.id,
+        username: currentUser.username
+      }));
+    } catch {
+      // ignore storage errors
+    }
+  }
+
   passwordForm.reset();
-  setMessage(passwordMessage, 'Password changed successfully.', 'success');
+  if (passwordUsername && currentUser) {
+    passwordUsername.value = currentUser.username;
+  }
+  setMessage(
+    passwordMessage,
+    isPasswordChange ? 'Username and password updated successfully.' : 'Username updated successfully.',
+    'success'
+  );
 });
 
 billDateEl.value = new Date().toISOString().slice(0, 10);
