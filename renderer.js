@@ -4,7 +4,7 @@
     return true;
   }
 
-const pageFiles = ['dashboard.html', 'billing.html', 'invoices.html', 'customers.html', 'products.html', 'product_sales.html', 'settings.html'];
+const pageFiles = ['dashboard.html', 'billing.html', 'invoices.html', 'payments.html', 'customers.html', 'products.html', 'product_sales.html', 'settings.html'];
   const fragments = [];
 
   for (const fileName of pageFiles) {
@@ -30,10 +30,15 @@ const appScreen = document.getElementById('appScreen');
 const loginForm = document.getElementById('loginForm');
 const loginMessage = document.getElementById('loginMessage');
 const logoutBtn = document.getElementById('logoutBtn');
+const logoutConfirmModal = document.getElementById('logoutConfirmModal');
+const confirmLogoutYesBtn = document.getElementById('confirmLogoutYes');
+const confirmLogoutNoBtn = document.getElementById('confirmLogoutNo');
 const welcomeUser = document.getElementById('welcomeUser');
+const sidebarToggleBtn = document.getElementById('sidebarToggle');
 
 const pageButtons = document.querySelectorAll('.tab-btn');
 const pages = document.querySelectorAll('.page');
+const SIDEBAR_COLLAPSED_KEY = 'gstBillingSidebarCollapsed';
 
 // Hide both main screens until session restore is complete,
 // so the login page does not flash briefly on refresh.
@@ -41,6 +46,46 @@ loginScreen.classList.remove('visible');
 loginScreen.classList.add('hidden');
 appScreen.classList.remove('visible');
 appScreen.classList.add('hidden');
+
+function setSidebarCollapsed(collapsed) {
+  const sidebar = document.querySelector('.sidebar');
+  const shouldCollapse = Boolean(collapsed);
+
+  appScreen.classList.toggle('sidebar-collapsed', shouldCollapse);
+  sidebar?.classList.toggle('collapsed', shouldCollapse);
+  document.documentElement.classList.toggle('sidebar-collapsed', shouldCollapse);
+
+  if (sidebarToggleBtn) {
+    sidebarToggleBtn.title = shouldCollapse ? 'Expand sidebar' : 'Collapse sidebar';
+    sidebarToggleBtn.setAttribute('aria-label', shouldCollapse ? 'Expand sidebar' : 'Collapse sidebar');
+    sidebarToggleBtn.setAttribute('aria-expanded', String(!shouldCollapse));
+    sidebarToggleBtn.innerHTML = `<span class="material-symbols-outlined">${shouldCollapse ? 'chevron_right' : 'chevron_left'}</span>`;
+  }
+
+  try {
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, shouldCollapse ? '1' : '0');
+  } catch {
+    // Ignore storage failures.
+  }
+}
+
+function restoreSidebarState() {
+  let collapsed = false;
+  try {
+    collapsed = localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1';
+  } catch {
+    collapsed = false;
+  }
+  setSidebarCollapsed(collapsed);
+}
+
+restoreSidebarState();
+
+if (sidebarToggleBtn) {
+  sidebarToggleBtn.addEventListener('click', () => {
+    setSidebarCollapsed(!appScreen.classList.contains('sidebar-collapsed'));
+  });
+}
 
 const billForm = document.getElementById('billForm');
 const toggleDetailsBtn = document.getElementById('toggleDetailsBtn');
@@ -68,6 +113,15 @@ const billDateEl = document.getElementById('billDate');
 const taxModeEl = document.getElementById('taxMode');
 const billMessage = document.getElementById('billMessage');
 const billsTableBody = document.getElementById('billsTableBody');
+const billSignatureModalEl = document.getElementById('billSignatureModal');
+const billSignatureNameInput = document.getElementById('billSignatureNameInput');
+const billSignatureStyleSelect = document.getElementById('billSignatureStyleSelect');
+const billSignatureUploadInput = document.getElementById('billSignatureUploadInput');
+const billSignatureDesignPreview = document.getElementById('billSignatureDesignPreview');
+const billSignatureCanvas = document.getElementById('billSignatureCanvas');
+const closeBillSignatureModalBtn = document.getElementById('closeBillSignatureModalBtn');
+const clearBillSignatureCanvasBtn = document.getElementById('clearBillSignatureCanvasBtn');
+const saveBillSignatureCanvasBtn = document.getElementById('saveBillSignatureCanvasBtn');
 
 const subtotalVal = document.getElementById('subtotalVal');
 const cgstVal = document.getElementById('cgstVal');
@@ -79,6 +133,7 @@ const dashCustomerCountEl = document.getElementById('dashCustomerCount');
 const dashProductCountEl = document.getElementById('dashProductCount');
 const dashInvoiceValueEl = document.getElementById('dashInvoiceValue');
 const dashMonthValueEl = document.getElementById('dashMonthValue');
+const dashOutstandingValueEl = document.getElementById('dashOutstandingValue');
 const dashRecentInvoicesEl = document.getElementById('dashRecentInvoices');
 const dashNextInvoicesEl = document.getElementById('dashNextInvoices');
 const dashSearchInputEl = document.getElementById('dashSearchInput');
@@ -132,6 +187,19 @@ const invoiceResetFilterBtnEl = document.getElementById('invoiceResetFilterBtn')
 const invoiceExportBtnEl = document.getElementById('invoiceExportBtn');
 const invoicePaginationEl = document.getElementById('invoicePagination');
 
+const paymentForm = document.getElementById('paymentForm');
+const paymentBillIdEl = document.getElementById('paymentBillId');
+const paymentDateEl = document.getElementById('paymentDate');
+const paymentAmountEl = document.getElementById('paymentAmount');
+const paymentMethodEl = document.getElementById('paymentMethod');
+const paymentReferenceEl = document.getElementById('paymentReference');
+const paymentNotesEl = document.getElementById('paymentNotes');
+const paymentInvoiceTotalEl = document.getElementById('paymentInvoiceTotal');
+const paymentPaidAmountEl = document.getElementById('paymentPaidAmount');
+const paymentDueAmountEl = document.getElementById('paymentDueAmount');
+const paymentMessageEl = document.getElementById('paymentMessage');
+const paymentsTableBody = document.getElementById('paymentsTableBody');
+
 const profileForm = document.getElementById('profileForm');
 const profileName = document.getElementById('profileName');
 const profileEmail = document.getElementById('profileEmail');
@@ -146,7 +214,19 @@ const profileBranchName = document.getElementById('profileBranchName');
 const profileIfsc = document.getElementById('profileIfsc');
 const profileDeclaration = document.getElementById('profileDeclaration');
 const profileSignatory = document.getElementById('profileSignatory');
+const profileSignatureBtn = document.getElementById('profileSignatureBtn');
+const profileSignatureClearBtn = document.getElementById('profileSignatureClearBtn');
+const profileSignaturePreview = document.getElementById('profileSignaturePreview');
 const profileMessage = document.getElementById('profileMessage');
+const signatureModalEl = document.getElementById('signatureModal');
+const signatureCanvas = document.getElementById('signatureCanvas');
+const signatureNameInput = document.getElementById('signatureNameInput');
+const signatureStyleSelect = document.getElementById('signatureStyleSelect');
+const signatureUploadInput = document.getElementById('signatureUploadInput');
+const signatureDesignPreview = document.getElementById('signatureDesignPreview');
+const closeSignatureModalBtn = document.getElementById('closeSignatureModalBtn');
+const clearSignatureCanvasBtn = document.getElementById('clearSignatureCanvasBtn');
+const saveSignatureCanvasBtn = document.getElementById('saveSignatureCanvasBtn');
 
 const taxForm = document.getElementById('taxForm');
 const defaultTaxRateEl = document.getElementById('defaultTaxRate');
@@ -170,10 +250,33 @@ const usersMessage = document.getElementById('usersMessage');
 const addUserModal = document.getElementById('addUserModal');
 const addUserForm = document.getElementById('addUserForm');
 const closeAddUserModalBtn = document.getElementById('closeAddUserModalBtn');
+const addUserTitle = document.getElementById('addUserTitle');
+const addUserSubmitBtn = addUserForm?.querySelector('button[type="submit"]');
 const newUserUsername = document.getElementById('newUserUsername');
 const newUserPassword = document.getElementById('newUserPassword');
 const newUserEmail = document.getElementById('newUserEmail');
 const addUserMessage = document.getElementById('addUserMessage');
+
+let profileSignatureData = '';
+let signatureDraft = {
+  mode: 'text',
+  name: '',
+  style: 'script',
+  data: ''
+};
+let signatureDrawing = false;
+let signaturePointerId = null;
+let signatureHasInk = false;
+let pendingInvoiceSave = null;
+let billSignatureDraft = {
+  mode: 'text',
+  name: '',
+  style: 'script',
+  data: ''
+};
+let billSignatureDrawing = false;
+let billSignaturePointerId = null;
+let billSignatureHasInk = false;
 
 function ensureCompositionSettingsField() {
   if (!taxForm || compositionValidDaysEl) {
@@ -259,12 +362,15 @@ let usersCache = [];
 let products = [];
 let customers = [];
 let billsCache = [];
+let paymentsCache = [];
 let productSalesCache = [];
 let defaultTaxRate = 12;
 let invoiceStartValue = 1;
 let compositionValidDays = 30;
 let editingCustomerId = null;
 let editingProductId = null;
+let editingUserId = null;
+let editingUserMode = 'add';
 const PAGE_SIZE = 15;
 const UNIT_OPTIONS = ['Meter', 'Kgs', 'Pices'];
 const searchState = {
@@ -634,6 +740,803 @@ function closeInvoiceModal() {
   }
 }
 
+function parseSignatureData(rawValue) {
+  const raw = String(rawValue || '').trim();
+  if (!raw) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') {
+      return null;
+    }
+    return {
+      mode: ['text', 'draw', 'upload'].includes(parsed.mode) ? parsed.mode : 'text',
+      name: String(parsed.name || '').trim(),
+      style: ['script', 'classic', 'bold', 'italic'].includes(parsed.style) ? parsed.style : 'script',
+      data: String(parsed.data || '').trim()
+    };
+  } catch {
+    if (raw.startsWith('data:image/')) {
+      return {
+        mode: 'upload',
+        name: '',
+        style: 'script',
+        data: raw
+      };
+    }
+    return null;
+  }
+}
+
+function escapeMarkup(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function getSignatureDisplayName() {
+  return String(signatureNameInput?.value || profileSignatory?.value || 'Authorised Signatory').trim() || 'Authorised Signatory';
+}
+
+function getSignatureStyle() {
+  return ['script', 'classic', 'bold', 'italic'].includes(signatureStyleSelect?.value || '')
+    ? signatureStyleSelect.value
+    : 'script';
+}
+
+function normalizeSignatureDraft(draft) {
+  const parsed = draft && typeof draft === 'object' ? draft : {};
+  return {
+    mode: ['text', 'draw', 'upload'].includes(parsed.mode) ? parsed.mode : 'text',
+    name: String(parsed.name || '').trim(),
+    style: ['script', 'classic', 'bold', 'italic'].includes(parsed.style) ? parsed.style : 'script',
+    data: String(parsed.data || '').trim()
+  };
+}
+
+function buildSignatureMarkup(draft) {
+  const signature = normalizeSignatureDraft(draft);
+  const displayName = signature.name.trim();
+
+  if (!signature.data && !displayName) {
+    return '<span>No signature added</span>';
+  }
+
+  if (signature.mode === 'upload' || signature.mode === 'draw') {
+    if (!signature.data) {
+      return '<span>No signature added</span>';
+    }
+    return `
+      <div class="signature-render signature-mode-image">
+        <img src="${escapeMarkup(signature.data)}" alt="Signature" />
+        <div class="signature-caption">${escapeMarkup(displayName)}</div>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="signature-render signature-mode-text signature-style-${signature.style}">
+      <div class="signature-text">${escapeMarkup(displayName)}</div>
+      <div class="signature-caption">${escapeMarkup(displayName)}</div>
+    </div>
+  `;
+}
+
+function applySignaturePreviewState() {
+  if (!signatureDesignPreview) {
+    return;
+  }
+  const html = buildSignatureMarkup(signatureDraft);
+  signatureDesignPreview.innerHTML = html;
+  signatureDesignPreview.classList.toggle('signature-empty', !signatureDraft.data && !signatureDraft.name);
+  if (profileSignaturePreview) {
+    profileSignaturePreview.innerHTML = html || 'No signature added';
+  }
+}
+
+function setSignatureDraft(nextDraft) {
+  signatureDraft = normalizeSignatureDraft(nextDraft);
+  profileSignatureData = signatureDraft.data || signatureDraft.name ? JSON.stringify(signatureDraft) : '';
+  if (signatureNameInput) {
+    signatureNameInput.value = signatureDraft.name;
+  }
+  if (signatureStyleSelect) {
+    signatureStyleSelect.value = signatureDraft.style;
+  }
+  if (profileSignatory) {
+    profileSignatory.value = signatureDraft.name || profileSignatory.value;
+  }
+  applySignaturePreviewState();
+}
+
+function syncSignatureDraftFromInputs() {
+  signatureDraft = normalizeSignatureDraft({
+    ...signatureDraft,
+    mode: signatureDraft.mode === 'upload' || signatureDraft.mode === 'draw' ? signatureDraft.mode : 'text',
+    name: getSignatureDisplayName(),
+    style: getSignatureStyle()
+  });
+  profileSignatureData = signatureDraft.data || signatureDraft.name ? JSON.stringify(signatureDraft) : '';
+  applySignaturePreviewState();
+}
+
+function getSignatureCanvasContext() {
+  return signatureCanvas?.getContext('2d') || null;
+}
+
+function prepareSignatureCanvas() {
+  if (!signatureCanvas) {
+    return;
+  }
+  const rect = signatureCanvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) {
+    return;
+  }
+  const ratio = window.devicePixelRatio || 1;
+  const width = Math.max(1, Math.round(rect.width * ratio));
+  const height = Math.max(1, Math.round(rect.height * ratio));
+  if (signatureCanvas.width !== width || signatureCanvas.height !== height) {
+    signatureCanvas.width = width;
+    signatureCanvas.height = height;
+  }
+  const ctx = getSignatureCanvasContext();
+  if (!ctx) {
+    return;
+  }
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#111';
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, rect.width, rect.height);
+}
+
+function clearSignatureCanvas() {
+  if (!signatureCanvas) {
+    return;
+  }
+  const ctx = getSignatureCanvasContext();
+  if (!ctx) {
+    return;
+  }
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
+  ctx.restore();
+  prepareSignatureCanvas();
+  signatureHasInk = false;
+  if (signatureDraft.mode === 'draw' || signatureDraft.mode === 'upload') {
+    signatureDraft = normalizeSignatureDraft({
+      ...signatureDraft,
+      mode: signatureDraft.name ? 'text' : 'text',
+      data: ''
+    });
+  }
+  syncSignatureDraftFromInputs();
+}
+
+function drawSignatureDataUrl(dataUrl) {
+  return new Promise((resolve) => {
+    if (!signatureCanvas || !dataUrl) {
+      resolve(false);
+      return;
+    }
+    const ctx = getSignatureCanvasContext();
+    if (!ctx) {
+      resolve(false);
+      return;
+    }
+    const image = new Image();
+    image.onload = () => {
+      const rect = signatureCanvas.getBoundingClientRect();
+      prepareSignatureCanvas();
+      const scale = Math.min((rect.width - 24) / image.width, (rect.height - 24) / image.height, 1);
+      const width = image.width * scale;
+      const height = image.height * scale;
+      const x = (rect.width - width) / 2;
+      const y = (rect.height - height) / 2;
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, rect.width, rect.height);
+      ctx.drawImage(image, x, y, width, height);
+      signatureHasInk = true;
+      resolve(true);
+    };
+    image.onerror = () => resolve(false);
+    image.src = dataUrl;
+  });
+}
+
+function openSignatureModal() {
+  if (!signatureModalEl || !signatureCanvas) {
+    return;
+  }
+  signatureModalEl.classList.remove('hidden');
+  window.requestAnimationFrame(async () => {
+    prepareSignatureCanvas();
+    if (profileSignatureData) {
+      const parsed = parseSignatureData(profileSignatureData);
+      if (parsed) {
+        setSignatureDraft(parsed);
+        if (parsed.mode === 'draw' && parsed.data) {
+          await drawSignatureDataUrl(parsed.data);
+        }
+        if (parsed.mode === 'upload' && parsed.data) {
+          await drawSignatureDataUrl(parsed.data);
+        }
+      }
+    } else {
+      setSignatureDraft({
+        mode: 'text',
+        name: getSignatureDisplayName(),
+        style: 'script',
+        data: ''
+      });
+      clearSignatureCanvas();
+    }
+  });
+}
+
+function closeSignatureModal() {
+  if (!signatureModalEl) {
+    return;
+  }
+  signatureModalEl.classList.add('hidden');
+}
+
+function parseBillSignatureData(rawValue) {
+  const raw = String(rawValue || '').trim();
+  if (!raw) {
+    return null;
+  }
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') {
+      return null;
+    }
+    return {
+      mode: ['text', 'draw', 'upload'].includes(parsed.mode) ? parsed.mode : 'text',
+      name: String(parsed.name || '').trim(),
+      style: ['script', 'classic', 'bold', 'italic'].includes(parsed.style) ? parsed.style : 'script',
+      data: String(parsed.data || '').trim()
+    };
+  } catch {
+    if (raw.startsWith('data:image/')) {
+      return { mode: 'upload', name: '', style: 'script', data: raw };
+    }
+    return null;
+  }
+}
+
+function billSignatureDisplayName() {
+  return String(billSignatureNameInput?.value || 'Recipient Signature').trim() || 'Recipient Signature';
+}
+
+function billSignatureStyle() {
+  return ['script', 'classic', 'bold', 'italic'].includes(billSignatureStyleSelect?.value || '')
+    ? billSignatureStyleSelect.value
+    : 'script';
+}
+
+function billSyncSignaturePreview() {
+  if (!billSignatureDesignPreview) {
+    return;
+  }
+  const hasText = Boolean(billSignatureDraft.name);
+  const hasData = Boolean(billSignatureDraft.data);
+  if (!hasText && !hasData) {
+    billSignatureDesignPreview.innerHTML = 'No signature added';
+    return;
+  }
+  if (billSignatureDraft.mode === 'upload' || billSignatureDraft.mode === 'draw') {
+    billSignatureDesignPreview.innerHTML = hasData
+      ? `
+        <div class="signature-render signature-mode-image signature-footprint">
+          <img src="${escapeMarkup(billSignatureDraft.data)}" alt="Signature" />
+          <div class="signature-caption">${escapeMarkup(billSignatureDisplayName())}</div>
+        </div>
+      `
+      : 'No signature added';
+    return;
+  }
+  billSignatureDesignPreview.innerHTML = `
+    <div class="signature-render signature-mode-text signature-style-${billSignatureStyle()} signature-footprint">
+      <div class="signature-text">${escapeMarkup(billSignatureDisplayName())}</div>
+      <div class="signature-caption">${escapeMarkup(billSignatureDisplayName())}</div>
+    </div>
+  `;
+}
+
+function billSetSignatureDraft(nextDraft) {
+  billSignatureDraft = {
+    mode: ['text', 'draw', 'upload'].includes(nextDraft?.mode) ? nextDraft.mode : 'text',
+    name: String(nextDraft?.name || '').trim(),
+    style: ['script', 'classic', 'bold', 'italic'].includes(nextDraft?.style) ? nextDraft.style : 'script',
+    data: String(nextDraft?.data || '').trim()
+  };
+  if (billSignatureNameInput) {
+    billSignatureNameInput.value = billSignatureDraft.name;
+  }
+  if (billSignatureStyleSelect) {
+    billSignatureStyleSelect.value = billSignatureDraft.style;
+  }
+  billSyncSignaturePreview();
+}
+
+function billGetSignatureContext() {
+  return billSignatureCanvas?.getContext('2d') || null;
+}
+
+function billPrepareSignatureCanvas() {
+  if (!billSignatureCanvas) {
+    return;
+  }
+  const rect = billSignatureCanvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) {
+    return;
+  }
+  const ratio = window.devicePixelRatio || 1;
+  const width = Math.max(1, Math.round(rect.width * ratio));
+  const height = Math.max(1, Math.round(rect.height * ratio));
+  if (billSignatureCanvas.width !== width || billSignatureCanvas.height !== height) {
+    billSignatureCanvas.width = width;
+    billSignatureCanvas.height = height;
+  }
+  const ctx = billGetSignatureContext();
+  if (!ctx) {
+    return;
+  }
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#111';
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, rect.width, rect.height);
+}
+
+function billClearSignatureCanvas() {
+  if (!billSignatureCanvas) {
+    return;
+  }
+  const ctx = billGetSignatureContext();
+  if (!ctx) {
+    return;
+  }
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.clearRect(0, 0, billSignatureCanvas.width, billSignatureCanvas.height);
+  ctx.restore();
+  billPrepareSignatureCanvas();
+  billSignatureHasInk = false;
+}
+
+function billDrawSignatureDataUrl(dataUrl) {
+  return new Promise((resolve) => {
+    if (!billSignatureCanvas || !dataUrl) {
+      resolve(false);
+      return;
+    }
+    const ctx = billGetSignatureContext();
+    if (!ctx) {
+      resolve(false);
+      return;
+    }
+    const image = new Image();
+    image.onload = () => {
+      const rect = billSignatureCanvas.getBoundingClientRect();
+      billPrepareSignatureCanvas();
+      const scale = Math.min((rect.width - 24) / image.width, (rect.height - 24) / image.height, 1);
+      const width = image.width * scale;
+      const height = image.height * scale;
+      const x = (rect.width - width) / 2;
+      const y = (rect.height - height) / 2;
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, rect.width, rect.height);
+      ctx.drawImage(image, x, y, width, height);
+      billSignatureHasInk = true;
+      resolve(true);
+    };
+    image.onerror = () => resolve(false);
+    image.src = dataUrl;
+  });
+}
+
+function billOpenSignatureModal() {
+  if (!billSignatureModalEl || !billSignatureCanvas) {
+    return;
+  }
+  billSignatureModalEl.classList.remove('hidden');
+  window.requestAnimationFrame(async () => {
+    billPrepareSignatureCanvas();
+    if (pendingInvoiceSave?.payload?.recipientSignatureData) {
+      const parsed = parseBillSignatureData(pendingInvoiceSave.payload.recipientSignatureData);
+      if (parsed) {
+        billSetSignatureDraft(parsed);
+        if (parsed.data) {
+          await billDrawSignatureDataUrl(parsed.data);
+        }
+      }
+    } else {
+      billSetSignatureDraft({
+        mode: 'text',
+        name: '',
+        style: 'script',
+        data: ''
+      });
+      billClearSignatureCanvas();
+    }
+  });
+}
+
+function billCloseSignatureModal() {
+  billSignatureModalEl?.classList.add('hidden');
+}
+
+function billApplyUploadedSignature(file) {
+  if (!file) {
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = String(reader.result || '');
+    billSignatureDraft = {
+      mode: 'upload',
+      name: billSignatureDisplayName(),
+      style: billSignatureStyle(),
+      data: dataUrl
+    };
+    billSignatureHasInk = true;
+    billSyncSignaturePreview();
+    billDrawSignatureDataUrl(dataUrl);
+  };
+  reader.readAsDataURL(file);
+}
+
+function billSignaturePoint(event) {
+  const rect = billSignatureCanvas.getBoundingClientRect();
+  const clientX = event.clientX ?? 0;
+  const clientY = event.clientY ?? 0;
+  return { x: clientX - rect.left, y: clientY - rect.top };
+}
+
+function billSignatureDown(event) {
+  if (!billSignatureCanvas) {
+    return;
+  }
+  event.preventDefault();
+  const ctx = billGetSignatureContext();
+  if (!ctx) {
+    return;
+  }
+  billSignatureDrawing = true;
+  billSignaturePointerId = event.pointerId ?? null;
+  billSignatureDraft.mode = 'draw';
+  const point = billSignaturePoint(event);
+  ctx.beginPath();
+  ctx.moveTo(point.x, point.y);
+}
+
+function billSignatureMove(event) {
+  if (!billSignatureDrawing || !billSignatureCanvas) {
+    return;
+  }
+  if (billSignaturePointerId != null && event.pointerId != null && event.pointerId !== billSignaturePointerId) {
+    return;
+  }
+  event.preventDefault();
+  const ctx = billGetSignatureContext();
+  if (!ctx) {
+    return;
+  }
+  const point = billSignaturePoint(event);
+  ctx.lineTo(point.x, point.y);
+  ctx.stroke();
+  billSignatureHasInk = true;
+}
+
+function billSignatureUp(event) {
+  if (!billSignatureDrawing) {
+    return;
+  }
+  if (event) {
+    event.preventDefault();
+  }
+  billSignatureDrawing = false;
+  billSignaturePointerId = null;
+}
+
+function billBindSignatureCanvas() {
+  if (!billSignatureCanvas || billSignatureCanvas.dataset.bound === '1') {
+    return;
+  }
+  billSignatureCanvas.dataset.bound = '1';
+  billSignatureCanvas.addEventListener('pointerdown', billSignatureDown);
+  billSignatureCanvas.addEventListener('pointermove', billSignatureMove);
+  billSignatureCanvas.addEventListener('pointerup', billSignatureUp);
+  billSignatureCanvas.addEventListener('pointercancel', billSignatureUp);
+  billSignatureCanvas.addEventListener('pointerleave', billSignatureUp);
+}
+
+function applyUploadedSignature(file) {
+  if (!file) {
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    const dataUrl = String(reader.result || '');
+    signatureDraft = normalizeSignatureDraft({
+      mode: 'upload',
+      name: getSignatureDisplayName(),
+      style: getSignatureStyle(),
+      data: dataUrl
+    });
+    profileSignatureData = JSON.stringify(signatureDraft);
+    drawSignatureDataUrl(dataUrl);
+    applySignaturePreviewState();
+  };
+  reader.readAsDataURL(file);
+}
+
+function getSignaturePoint(event) {
+  const rect = signatureCanvas.getBoundingClientRect();
+  const clientX = event.clientX ?? event.touches?.[0]?.clientX ?? 0;
+  const clientY = event.clientY ?? event.touches?.[0]?.clientY ?? 0;
+  return {
+    x: clientX - rect.left,
+    y: clientY - rect.top
+  };
+}
+
+function startSignatureStroke(event) {
+  if (!signatureCanvas) {
+    return;
+  }
+  event.preventDefault();
+  const ctx = getSignatureCanvasContext();
+  if (!ctx) {
+    return;
+  }
+  signatureDrawing = true;
+  signaturePointerId = event.pointerId ?? null;
+  const point = getSignaturePoint(event);
+  ctx.beginPath();
+  ctx.moveTo(point.x, point.y);
+  signatureDraft.mode = 'draw';
+  signatureHasInk = true;
+}
+
+function moveSignatureStroke(event) {
+  if (!signatureDrawing || !signatureCanvas) {
+    return;
+  }
+  if (signaturePointerId != null && event.pointerId != null && event.pointerId !== signaturePointerId) {
+    return;
+  }
+  event.preventDefault();
+  const ctx = getSignatureCanvasContext();
+  if (!ctx) {
+    return;
+  }
+  const point = getSignaturePoint(event);
+  ctx.lineTo(point.x, point.y);
+  ctx.stroke();
+  signatureHasInk = true;
+}
+
+function endSignatureStroke(event) {
+  if (!signatureDrawing) {
+    return;
+  }
+  if (event) {
+    event.preventDefault();
+  }
+  signatureDrawing = false;
+  signaturePointerId = null;
+}
+
+function bindSignatureCanvasEvents() {
+  if (!signatureCanvas || signatureCanvas.dataset.bound === '1') {
+    return;
+  }
+  signatureCanvas.dataset.bound = '1';
+  signatureCanvas.addEventListener('pointerdown', startSignatureStroke);
+  signatureCanvas.addEventListener('pointermove', moveSignatureStroke);
+  signatureCanvas.addEventListener('pointerup', endSignatureStroke);
+  signatureCanvas.addEventListener('pointercancel', endSignatureStroke);
+  signatureCanvas.addEventListener('pointerleave', endSignatureStroke);
+}
+
+bindSignatureCanvasEvents();
+
+profileSignatureBtn?.addEventListener('click', openSignatureModal);
+profileSignaturePreview?.addEventListener('click', openSignatureModal);
+profileSignatureClearBtn?.addEventListener('click', () => {
+  signatureDraft = {
+    mode: 'text',
+    name: '',
+    style: 'script',
+    data: ''
+  };
+  profileSignatureData = '';
+  if (signatureNameInput) {
+    signatureNameInput.value = '';
+  }
+  if (signatureStyleSelect) {
+    signatureStyleSelect.value = 'script';
+  }
+  if (signatureUploadInput) {
+    signatureUploadInput.value = '';
+  }
+  signatureHasInk = false;
+  clearSignatureCanvas();
+  applySignaturePreviewState();
+  setMessage(profileMessage, 'Signature cleared. Save the profile to keep it removed.', 'success');
+});
+closeSignatureModalBtn?.addEventListener('click', closeSignatureModal);
+clearSignatureCanvasBtn?.addEventListener('click', () => {
+  signatureDraft = {
+    mode: 'text',
+    name: '',
+    style: 'script',
+    data: ''
+  };
+  profileSignatureData = '';
+  signatureHasInk = false;
+  if (signatureNameInput) {
+    signatureNameInput.value = '';
+  }
+  if (signatureStyleSelect) {
+    signatureStyleSelect.value = 'script';
+  }
+  if (signatureUploadInput) {
+    signatureUploadInput.value = '';
+  }
+  if (profileSignatory) {
+    profileSignatory.value = '';
+  }
+  clearSignatureCanvas();
+  applySignaturePreviewState();
+  setMessage(profileMessage, 'Signature cleared. Save the profile to keep it removed.', 'success');
+});
+signatureNameInput?.addEventListener('input', () => {
+  syncSignatureDraftFromInputs();
+  if (profileSignatory) {
+    profileSignatory.value = getSignatureDisplayName();
+  }
+});
+signatureStyleSelect?.addEventListener('change', () => {
+  syncSignatureDraftFromInputs();
+});
+signatureUploadInput?.addEventListener('change', () => {
+  const file = signatureUploadInput?.files?.[0];
+  if (file) {
+    applyUploadedSignature(file);
+  }
+});
+saveSignatureCanvasBtn?.addEventListener('click', () => {
+  if (!signatureCanvas) {
+    return;
+  }
+  if (signatureDraft.mode === 'text') {
+    syncSignatureDraftFromInputs();
+  } else if (signatureHasInk) {
+    signatureDraft = normalizeSignatureDraft({
+      mode: 'draw',
+      name: getSignatureDisplayName(),
+      style: getSignatureStyle(),
+      data: signatureCanvas.toDataURL('image/png')
+    });
+    profileSignatureData = JSON.stringify(signatureDraft);
+    applySignaturePreviewState();
+  } else if (!signatureDraft.data && !signatureDraft.name) {
+    profileSignatureData = '';
+    applySignaturePreviewState();
+  }
+  closeSignatureModal();
+  setMessage(profileMessage, 'Signature saved in the form. Click Save Profile to store it.', 'success');
+});
+signatureModalEl?.addEventListener('click', (event) => {
+  if (event.target === signatureModalEl) {
+    closeSignatureModal();
+  }
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && signatureModalEl && !signatureModalEl.classList.contains('hidden')) {
+    closeSignatureModal();
+  }
+});
+
+billBindSignatureCanvas();
+
+billSignatureNameInput?.addEventListener('input', () => {
+  billSignatureDraft.name = billSignatureDisplayName();
+  billSignatureDraft.style = billSignatureStyle();
+  billSyncSignaturePreview();
+});
+
+billSignatureStyleSelect?.addEventListener('change', () => {
+  billSignatureDraft.style = billSignatureStyle();
+  billSyncSignaturePreview();
+});
+
+billSignatureUploadInput?.addEventListener('change', () => {
+  const file = billSignatureUploadInput?.files?.[0];
+  if (file) {
+    billApplyUploadedSignature(file);
+  }
+});
+
+closeBillSignatureModalBtn?.addEventListener('click', () => {
+  pendingInvoiceSave = null;
+  billCloseSignatureModal();
+});
+
+clearBillSignatureCanvasBtn?.addEventListener('click', () => {
+  billSignatureDraft = {
+    mode: 'text',
+    name: '',
+    style: 'script',
+    data: ''
+  };
+  billSignatureHasInk = false;
+  if (billSignatureNameInput) {
+    billSignatureNameInput.value = '';
+  }
+  if (billSignatureStyleSelect) {
+    billSignatureStyleSelect.value = 'script';
+  }
+  if (billSignatureUploadInput) {
+    billSignatureUploadInput.value = '';
+  }
+  billClearSignatureCanvas();
+  billSyncSignaturePreview();
+});
+
+saveBillSignatureCanvasBtn?.addEventListener('click', async () => {
+  if (!pendingInvoiceSave) {
+    billCloseSignatureModal();
+    return;
+  }
+  const hasText = Boolean(billSignatureDraft.name.trim());
+  const hasImage = Boolean(billSignatureDraft.data);
+  if (!hasText && !hasImage && !billSignatureHasInk) {
+    setMessage(billMessage, 'Please add a recipient signature before saving.', 'error');
+    return;
+  }
+
+  const recipientSignatureData = JSON.stringify({
+    mode: billSignatureDraft.mode,
+    name: billSignatureDisplayName(),
+    style: billSignatureStyle(),
+    data: billSignatureDraft.data || (billSignatureHasInk && billSignatureCanvas ? billSignatureCanvas.toDataURL('image/png') : '')
+  });
+  const { payload, submitAction } = pendingInvoiceSave;
+  pendingInvoiceSave = null;
+  billCloseSignatureModal();
+  await submitInvoice(payload, submitAction, recipientSignatureData);
+});
+
+billSignatureModalEl?.addEventListener('click', (event) => {
+  if (event.target === billSignatureModalEl) {
+    pendingInvoiceSave = null;
+    billCloseSignatureModal();
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && billSignatureModalEl && !billSignatureModalEl.classList.contains('hidden')) {
+    pendingInvoiceSave = null;
+    billCloseSignatureModal();
+  }
+});
+
 async function downloadBillById(billId, buttonEl = null) {
   if (!billId) {
     return;
@@ -659,7 +1562,7 @@ async function downloadBillById(billId, buttonEl = null) {
   }
 
   showToast('Downloaded successfully');
-  setMessage(billMessage, `Invoice downloaded: ${result.filePath}`, 'success');
+  setMessage(billMessage, `PDF print page opened: ${result.filePath}`, 'success');
 }
 
 function showPage(pageId, options = { pushState: true }) {
@@ -755,6 +1658,9 @@ function showApp(user) {
   loginScreen.classList.add('hidden');
   appScreen.classList.remove('hidden');
   appScreen.classList.add('visible');
+  if (welcomeUser) {
+    welcomeUser.textContent = user?.username ? `Signed in as ${user.username}` : 'Workspace';
+  }
   updateUsersAccess();
   updatePasswordSettingsUsername();
   // Start inactivity timer when user logs in
@@ -1140,12 +2046,79 @@ function renderBillsTable(bills = billsCache) {
       <td>${bill.customerName}</td>
       <td>${getSupplyTypeLabel(bill.taxMode)}</td>
       <td>${bill.billDate}</td>
-      <td>${Number(bill.total).toFixed(2)}</td>
-      <td><button type="button" class="inline-btn" data-open-invoice-id="${bill.id}">Preview</button></td>
+      <td>${Number(bill.total).toFixed(2)}<br /><span class="muted">${bill.paymentStatus || 'Unpaid'} | Due ${Number(bill.dueAmount || 0).toFixed(2)}</span></td>
+      <td class="action-cell">
+        <button type="button" class="inline-btn" data-open-invoice-id="${bill.id}">Preview</button>
+        <button type="button" class="inline-btn" data-download-invoice-id="${bill.id}">PDF</button>
+      </td>
     `;
     billsTableBody.appendChild(row);
   });
   renderPagination(invoicePaginationEl, 'invoices', filteredBills.length);
+}
+
+function populatePaymentInvoiceOptions() {
+  if (!paymentBillIdEl) {
+    return;
+  }
+  const selectedValue = paymentBillIdEl.value;
+  const payableBills = billsCache.filter((bill) => Number(bill.dueAmount || bill.total || 0) > 0);
+  paymentBillIdEl.innerHTML = payableBills.length
+    ? payableBills.map((bill) => (
+        `<option value="${bill.id}">${bill.invoiceNo} | ${bill.customerName} | Due ${Number(bill.dueAmount || 0).toFixed(2)}</option>`
+      )).join('')
+    : '<option value="">No unpaid invoices</option>';
+  if (payableBills.some((bill) => String(bill.id) === selectedValue)) {
+    paymentBillIdEl.value = selectedValue;
+  }
+  updatePaymentSummary();
+}
+
+function updatePaymentSummary() {
+  if (!paymentBillIdEl) {
+    return;
+  }
+  const bill = billsCache.find((row) => Number(row.id) === Number(paymentBillIdEl.value));
+  const invoiceTotal = Number(bill?.total || 0);
+  const paidAmount = Number(bill?.paidAmount || 0);
+  const dueAmount = Number(bill?.dueAmount || invoiceTotal || 0);
+  if (paymentInvoiceTotalEl) {
+    paymentInvoiceTotalEl.textContent = invoiceTotal.toFixed(2);
+  }
+  if (paymentPaidAmountEl) {
+    paymentPaidAmountEl.textContent = paidAmount.toFixed(2);
+  }
+  if (paymentDueAmountEl) {
+    paymentDueAmountEl.textContent = dueAmount.toFixed(2);
+  }
+  if (paymentAmountEl && (!paymentAmountEl.value || Number(paymentAmountEl.value) > dueAmount)) {
+    paymentAmountEl.value = dueAmount > 0 ? dueAmount.toFixed(2) : '';
+  }
+}
+
+function renderPaymentsTable() {
+  if (!paymentsTableBody) {
+    return;
+  }
+  paymentsTableBody.innerHTML = '';
+  if (paymentsCache.length === 0) {
+    paymentsTableBody.innerHTML = '<tr><td colspan="7" class="muted">No payments saved.</td></tr>';
+    return;
+  }
+
+  paymentsCache.forEach((payment) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${payment.receiptNo || '-'}</td>
+      <td>${payment.invoiceNo || '-'}</td>
+      <td>${payment.customerName || '-'}</td>
+      <td>${payment.paymentDate || '-'}</td>
+      <td>${Number(payment.amount || 0).toFixed(2)}</td>
+      <td>${payment.method || '-'}</td>
+      <td><button type="button" class="inline-btn" data-download-payment-id="${payment.id}">PDF</button></td>
+    `;
+    paymentsTableBody.appendChild(row);
+  });
 }
 
 function renderDashboard() {
@@ -1160,11 +2133,15 @@ function renderDashboard() {
   const monthValue = filteredBills
     .filter((bill) => String(bill.billDate || '').startsWith(monthPrefix))
     .reduce((sum, bill) => sum + Number(bill.total || 0), 0);
+  const outstandingValue = filteredBills.reduce((sum, bill) => sum + Number(bill.dueAmount || 0), 0);
   dashInvoiceCountEl.textContent = String(billsCache.length);
   dashCustomerCountEl.textContent = String(customers.length);
   dashProductCountEl.textContent = String(products.length);
   dashInvoiceValueEl.textContent = invoiceValue.toFixed(2);
   dashMonthValueEl.textContent = monthValue.toFixed(2);
+  if (dashOutstandingValueEl) {
+    dashOutstandingValueEl.textContent = outstandingValue.toFixed(2);
+  }
 
   const { rows } = paginateItems(filteredBills, 'dashboard');
 
@@ -1223,7 +2200,21 @@ async function loadBills() {
   }
   billsCache = result.bills || [];
   renderBillsTable(result.bills);
+  populatePaymentInvoiceOptions();
   renderDashboard();
+}
+
+async function loadPayments() {
+  if (!paymentsTableBody) {
+    return;
+  }
+  const result = await window.billingApi.listPayments();
+  if (!result.success) {
+    setMessage(paymentMessageEl, result.message || 'Unable to load payments.', 'error');
+    return;
+  }
+  paymentsCache = result.payments || [];
+  renderPaymentsTable();
 }
 
 function ensureProductSalesDefaultMonth() {
@@ -1282,6 +2273,19 @@ async function loadSettings() {
   profileIfsc.value = result.settings.profileIfsc || '';
   profileDeclaration.value = result.settings.profileDeclaration || '';
   profileSignatory.value = result.settings.profileSignatory || '';
+  const storedSignature = parseSignatureData(result.settings.profileSignatureData || '');
+  if (storedSignature) {
+    setSignatureDraft(storedSignature);
+  } else {
+    signatureDraft = {
+      mode: 'text',
+      name: '',
+      style: 'script',
+      data: ''
+    };
+    profileSignatureData = '';
+    applySignaturePreviewState();
+  }
   defaultTaxRate = Number(result.settings.defaultTaxRate || 12);
   invoiceStartValue = Number(result.settings.invoiceStartValue || 1);
   compositionValidDays = Number(result.settings.compositionValidDays || 30);
@@ -1307,10 +2311,67 @@ function setAddUserModalVisible(visible) {
   }
   addUserModal.classList.toggle('hidden', !visible);
   if (visible) {
-    addUserForm.reset();
     setMessage(addUserMessage, '', '');
     newUserUsername?.focus();
+  } else {
+    editingUserId = null;
+    editingUserMode = 'add';
+    addUserTitle && (addUserTitle.textContent = 'Add User');
+    if (addUserSubmitBtn) {
+      addUserSubmitBtn.textContent = 'Save User';
+    }
+    if (newUserPassword) {
+      newUserPassword.required = true;
+      newUserPassword.value = '';
+      newUserPassword.placeholder = '';
+    }
+    addUserForm.reset();
   }
+}
+
+function openUserModalForAdd() {
+  editingUserId = null;
+  editingUserMode = 'add';
+  if (addUserTitle) {
+    addUserTitle.textContent = 'Add User';
+  }
+  if (addUserSubmitBtn) {
+    addUserSubmitBtn.textContent = 'Save User';
+  }
+  if (newUserPassword) {
+    newUserPassword.required = true;
+    newUserPassword.placeholder = '';
+  }
+  addUserForm?.reset();
+  setAddUserModalVisible(true);
+}
+
+function openUserModalForEdit(user) {
+  if (!user || !addUserForm) {
+    return;
+  }
+  editingUserId = Number(user.id);
+  editingUserMode = 'edit';
+  if (addUserTitle) {
+    addUserTitle.textContent = 'Edit User';
+  }
+  if (addUserSubmitBtn) {
+    addUserSubmitBtn.textContent = 'Update User';
+  }
+  if (newUserUsername) {
+    newUserUsername.value = String(user.username || '');
+  }
+  if (newUserEmail) {
+    newUserEmail.value = String(user.email || '');
+  }
+  if (newUserPassword) {
+    newUserPassword.value = '';
+    newUserPassword.required = false;
+    newUserPassword.placeholder = 'Leave blank to keep password';
+  }
+  setMessage(addUserMessage, '', '');
+  addUserModal?.classList.remove('hidden');
+  newUserUsername?.focus();
 }
 
 function renderUsersTable() {
@@ -1350,6 +2411,16 @@ function renderUsersTable() {
     });
 
     const actionCell = document.createElement('td');
+    actionCell.className = 'action-cell';
+    const editButton = document.createElement('button');
+    editButton.type = 'button';
+    editButton.className = 'inline-btn';
+    editButton.textContent = 'Edit';
+    editButton.title = 'Edit user';
+    editButton.addEventListener('click', () => {
+      openUserModalForEdit(user);
+    });
+
     const actionButton = document.createElement('button');
     const active = user.active !== false;
     const isProtectedUser = Number(user.id) === 1 || Number(user.id) === Number(currentUser?.id);
@@ -1378,6 +2449,7 @@ function renderUsersTable() {
       setMessage(usersMessage, `User ${result.user.username} ${result.user.active ? 'activated' : 'deactivated'}.`, 'success');
     });
 
+    actionCell.appendChild(editButton);
     actionCell.appendChild(actionButton);
     row.appendChild(actionCell);
     usersTableBody.appendChild(row);
@@ -1408,7 +2480,7 @@ async function loadUsers() {
 }
 
 async function bootstrapAppData() {
-  await Promise.all([loadSettings(), loadCustomers(), loadProducts(), loadBills(), loadProductSales()]);
+  await Promise.all([loadSettings(), loadCustomers(), loadProducts(), loadBills(), loadProductSales(), loadPayments()]);
   await loadUsers();
 }
 
@@ -1546,6 +2618,59 @@ invoiceResetFilterBtnEl?.addEventListener('click', () => {
   renderBillsTable();
 });
 
+paymentBillIdEl?.addEventListener('change', updatePaymentSummary);
+
+paymentForm?.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  if (!currentUser) {
+    setMessage(paymentMessageEl, 'Please login again.', 'error');
+    return;
+  }
+
+  const result = await window.billingApi.savePayment({
+    billId: paymentBillIdEl.value,
+    paymentDate: paymentDateEl.value,
+    amount: paymentAmountEl.value,
+    method: paymentMethodEl.value,
+    referenceNo: paymentReferenceEl.value,
+    notes: paymentNotesEl.value,
+    createdBy: currentUser.id
+  });
+
+  if (!result.success) {
+    setMessage(paymentMessageEl, result.message || 'Unable to save payment.', 'error');
+    return;
+  }
+
+  setMessage(paymentMessageEl, `Payment ${result.payment?.receiptNo || ''} saved.`, 'success');
+  paymentForm.reset();
+  paymentDateEl.value = new Date().toISOString().slice(0, 10);
+  await loadBills();
+  await loadPayments();
+  updatePaymentSummary();
+});
+
+paymentsTableBody?.addEventListener('click', async (event) => {
+  const button = event.target.closest('[data-download-payment-id]');
+  if (!button) {
+    return;
+  }
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = 'Preparing...';
+  const result = await window.billingApi.downloadPaymentPdf({
+    paymentId: Number(button.dataset.downloadPaymentId || 0)
+  });
+  button.disabled = false;
+  button.textContent = originalText || 'PDF';
+  if (!result.success) {
+    setMessage(paymentMessageEl, result.message || 'Unable to open payment PDF.', 'error');
+    return;
+  }
+  showToast('Payment PDF opened');
+  setMessage(paymentMessageEl, `Payment PDF print page opened: ${result.filePath}`, 'success');
+});
+
 async function applyProductSalesDateFilter() {
   dateFilterState.productSalesFrom = productSalesDateFromEl?.value || '';
   dateFilterState.productSalesTo = productSalesDateToEl?.value || '';
@@ -1635,7 +2760,7 @@ addUserBtn?.addEventListener('click', () => {
     setMessage(usersMessage, 'Only admin can add users.', 'error');
     return;
   }
-  setAddUserModalVisible(true);
+  openUserModalForAdd();
 });
 
 closeAddUserModalBtn?.addEventListener('click', () => {
@@ -1657,21 +2782,28 @@ addUserForm?.addEventListener('submit', async (event) => {
   }
 
   const submitButton = addUserForm.querySelector('button[type="submit"]');
-  const originalText = submitButton?.textContent || 'Save User';
+  const isEditingUser = Number(editingUserId || 0) > 0;
+  const originalText = submitButton?.textContent || (isEditingUser ? 'Update User' : 'Save User');
   if (submitButton) {
     submitButton.disabled = true;
-    submitButton.textContent = 'Saving...';
+    submitButton.textContent = isEditingUser ? 'Updating...' : 'Saving...';
   }
 
   let result;
   try {
-    result = await window.billingApi.addUser({
+    const payload = {
       username: newUserUsername.value.trim(),
       password: newUserPassword.value,
       email: newUserEmail.value.trim()
-    });
+    };
+    result = isEditingUser
+      ? await window.billingApi.updateUser({
+          userId: editingUserId,
+          ...payload
+        })
+      : await window.billingApi.addUser(payload);
   } catch (error) {
-    result = { success: false, message: error.message || 'Unable to add user.' };
+    result = { success: false, message: error.message || (isEditingUser ? 'Unable to update user.' : 'Unable to add user.') };
   } finally {
     if (submitButton) {
       submitButton.disabled = false;
@@ -1686,7 +2818,15 @@ addUserForm?.addEventListener('submit', async (event) => {
 
   setAddUserModalVisible(false);
   await loadUsers();
-  setMessage(usersMessage, result.message || `User ${result.user.username} added.`, result.message ? 'error' : 'success');
+  if (currentUser && Number(currentUser.id) === Number(result.user.id)) {
+    currentUser = result.user;
+    updatePasswordSettingsUsername();
+  }
+  setMessage(
+    usersMessage,
+    result.message || `User ${result.user.username} ${isEditingUser ? 'updated' : 'added'}.`,
+    result.message ? 'error' : 'success'
+  );
 });
 
 createBackupBtn?.addEventListener('click', async () => {
@@ -1714,27 +2854,29 @@ createBackupBtn?.addEventListener('click', async () => {
   setMessage(backupMessageEl, successText, result.mailSent === false ? 'error' : 'success');
 });
 
+function bindPasswordToggle(button, input) {
+  if (!button || !input) {
+    return;
+  }
+  button.addEventListener('click', (event) => {
+    event.preventDefault();
+    const isHidden = input.type === 'password';
+    input.type = isHidden ? 'text' : 'password';
+    button.innerHTML = `<span class="material-symbols-outlined">${isHidden ? 'visibility' : 'visibility_off'}</span>`;
+    button.title = isHidden ? 'Hide password' : 'Show password';
+  });
+}
+
 // Password visibility toggle
 const passwordInput = document.getElementById('password');
 const togglePasswordBtn = document.getElementById('togglePassword');
 let inactivityTimer = null;
 const INACTIVITY_DELAY_MS = 15 * 60 * 1000; // 15 minutes
 
-if (togglePasswordBtn && passwordInput) {
-  togglePasswordBtn.addEventListener('click', (event) => {
-    event.preventDefault();
-    
-    if (passwordInput.type === 'password') {
-      passwordInput.type = 'text';
-      togglePasswordBtn.innerHTML = '<span class="material-symbols-outlined">visibility</span>';
-      togglePasswordBtn.title = 'Hide password';
-    } else {
-      passwordInput.type = 'password';
-      togglePasswordBtn.innerHTML = '<span class="material-symbols-outlined">visibility_off</span>';
-      togglePasswordBtn.title = 'Show password';
-    }
-  });
-}
+bindPasswordToggle(togglePasswordBtn, passwordInput);
+document.querySelectorAll('[data-toggle-password]').forEach((button) => {
+  bindPasswordToggle(button, document.getElementById(button.dataset.togglePassword));
+});
 
 // Auto-logout after 15 minutes of inactivity
 function startInactivityTimer() {
@@ -1822,7 +2964,28 @@ loginForm.addEventListener('submit', async (event) => {
   updateTotals();
 });
 
-logoutBtn.addEventListener('click', async () => {
+function showLogoutConfirm() {
+  if (logoutConfirmModal) {
+    logoutConfirmModal.classList.remove('hidden');
+  }
+}
+
+function hideLogoutConfirm() {
+  if (logoutConfirmModal) {
+    logoutConfirmModal.classList.add('hidden');
+  }
+}
+
+logoutBtn.addEventListener('click', () => {
+  showLogoutConfirm();
+});
+
+confirmLogoutNoBtn?.addEventListener('click', () => {
+  hideLogoutConfirm();
+});
+
+confirmLogoutYesBtn?.addEventListener('click', async () => {
+  hideLogoutConfirm();
   await window.billingApi.logout();
   showLogin();
   setLoginRoute();
@@ -1834,6 +2997,44 @@ toggleDetailsBtn.addEventListener('click', () => {
   toggleDetailsBtn.textContent = isHidden ? '- Hide Details' : '+ Add Details';
 });
 taxModeEl.addEventListener('change', handleTaxModeChange);
+
+async function submitInvoice(payload, submitAction, recipientSignatureData = '') {
+  if (!currentUser) {
+    setMessage(billMessage, 'Please login again.', 'error');
+    return;
+  }
+
+  const finalPayload = {
+    ...payload,
+    recipientSignatureData
+  };
+
+  const result = await window.billingApi.createBill(finalPayload);
+  if (!result.success) {
+    setMessage(billMessage, result.message || 'Failed to save invoice.', 'error');
+    return;
+  }
+
+  let postSaveMessage = `Invoice ${result.invoiceNo} saved Invoice`;
+  let postSaveMessageType = 'success';
+
+  if (submitAction === 'save-print' && result.bill?.id) {
+    const printResult = await window.billingApi.printInvoice({ billId: result.bill.id });
+    if (!printResult.success) {
+      postSaveMessage =
+        `Invoice ${result.invoiceNo} saved, but print failed: ${printResult.message || 'Unable to open printer.'}`;
+      postSaveMessageType = 'error';
+    } else {
+      showToast('Printer opened successfully');
+      postSaveMessage = `Invoice ${result.invoiceNo} saved in backend and print page opened.`;
+    }
+  }
+
+  setMessage(billMessage, postSaveMessage, postSaveMessageType);
+  resetBillingForm();
+  await loadBills();
+  await loadPayments();
+}
 
 billForm.addEventListener('submit', async (event) => {
   event.preventDefault();
@@ -1867,52 +3068,17 @@ billForm.addEventListener('submit', async (event) => {
     createdBy: currentUser.id,
     items: collectItems()
   };
-
-  const result = await window.billingApi.createBill(payload);
-  if (!result.success) {
-    setMessage(billMessage, result.message || 'Failed to save invoice.', 'error');
-    return;
-  }
-
-  let postSaveMessage = `Invoice ${result.invoiceNo} saved to C:\\GST Application\\Invoices.`;
-  let postSaveMessageType = 'success';
-
-  if (submitAction === 'save-print' && result.bill?.id) {
-    const saveResult = await window.billingApi.downloadInvoicePdf({ billId: result.bill.id });
-    if (!saveResult.success) {
-      postSaveMessage =
-        `Invoice ${result.invoiceNo} saved, but download failed: ${saveResult.message || 'Unable to download invoice.'}`;
-      postSaveMessageType = 'error';
-    } else {
-      showToast('Downloaded successfully');
-
-      const printResult = await window.billingApi.printInvoice({ billId: result.bill.id });
-      if (!printResult.success) {
-        postSaveMessage =
-          `Invoice ${result.invoiceNo} saved and downloaded, but print failed: ${printResult.message || 'Unable to open printer.'}`;
-        postSaveMessageType = 'error';
-      } else {
-        showToast('Printer opened successfully');
-        postSaveMessage = `Invoice ${result.invoiceNo} saved to C:\\GST Application\\Invoices and printer opened.`;
-      }
-    }
-  } else {
-    const saveResult = await window.billingApi.downloadInvoicePdf({ billId: result.bill.id });
-    if (!saveResult.success) {
-      postSaveMessage =
-        `Invoice ${result.invoiceNo} saved, but download failed: ${saveResult.message || 'Unable to download invoice.'}`;
-      postSaveMessageType = 'error';
-    } else {
-      showToast('Downloaded successfully');
-    }
-  }
-
-  setMessage(billMessage, postSaveMessage, postSaveMessageType);
-  resetBillingForm();
-  await loadBills();
+  pendingInvoiceSave = { payload, submitAction };
+  billOpenSignatureModal();
 });
 
 billsTableBody.addEventListener('click', async (event) => {
+  const downloadButton = event.target.closest('[data-download-invoice-id]');
+  if (downloadButton) {
+    await downloadBillById(Number(downloadButton.dataset.downloadInvoiceId || 0), downloadButton);
+    return;
+  }
+
   const openButton = event.target.closest('[data-open-invoice-id]');
   if (openButton) {
     const openBillId = Number(openButton.dataset.openInvoiceId || 0);
@@ -2111,7 +3277,8 @@ profileForm.addEventListener('submit', async (event) => {
     profileBranchName: profileBranchName.value.trim(),
     profileIfsc: profileIfsc.value.trim(),
     profileDeclaration: profileDeclaration.value.trim(),
-    profileSignatory: profileSignatory.value.trim()
+    profileSignatory: profileSignatory.value.trim(),
+    profileSignatureData
   });
 
   if (!result.success) {
@@ -2219,6 +3386,9 @@ passwordForm.addEventListener('submit', async (event) => {
 });
 
 billDateEl.value = new Date().toISOString().slice(0, 10);
+if (paymentDateEl) {
+  paymentDateEl.value = new Date().toISOString().slice(0, 10);
+}
 populateStateDropdown(customerStateEl);
 populateStateDropdown(custState);
 populateStateDropdown(profileState);

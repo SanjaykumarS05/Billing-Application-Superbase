@@ -133,3 +133,46 @@
   </div>
 </section>
 
+<div id="billSignatureModal" class="invoice-modal-backdrop hidden">
+  <div class="invoice-modal signature-modal" role="dialog" aria-modal="true" aria-labelledby="billSignatureModalTitle">
+    <div class="invoice-modal-head">
+      <div class="invoice-modal-title-wrap">
+        <h3 id="billSignatureModalTitle">Recipient Signature</h3>
+        <p class="invoice-modal-meta">Sign here before saving the invoice.</p>
+      </div>
+      <button id="closeBillSignatureModalBtn" type="button" class="inline-btn">Close</button>
+    </div>
+    <div class="signature-modal-body">
+      <div class="grid two">
+        <label>
+          Recipient Name
+          <input id="billSignatureNameInput" type="text" placeholder="Recipient" />
+        </label>
+        <label>
+          Signature Style
+          <select id="billSignatureStyleSelect">
+            <option value="script">Script</option>
+            <option value="classic">Classic</option>
+            <option value="bold">Bold</option>
+            <option value="italic">Italic</option>
+          </select>
+        </label>
+      </div>
+      <label>
+        Upload Signature
+        <input id="billSignatureUploadInput" type="file" accept="image/*" />
+      </label>
+      <div class="signature-live-preview">
+        <div class="signature-live-label">Live Preview</div>
+        <div id="billSignatureDesignPreview" class="signature-design-preview">No signature added</div>
+      </div>
+      <div class="signature-draw-label">Or draw signature below</div>
+      <canvas id="billSignatureCanvas" class="signature-canvas"></canvas>
+    </div>
+    <div class="signature-modal-actions">
+      <button id="clearBillSignatureCanvasBtn" type="button" class="btn ghost">Clear</button>
+      <button id="saveBillSignatureCanvasBtn" type="button" class="btn primary">Save Invoice</button>
+    </div>
+  </div>
+</div>
+

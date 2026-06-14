@@ -67,6 +67,14 @@
             Authorized Signatory Name
             <input id="profileSignatory" type="text" />
           </label>
+          <label>
+            Signature
+            <div class="signature-field">
+              <button id="profileSignatureBtn" class="btn ghost" type="button">Add / Edit Signature</button>
+              <button id="profileSignatureClearBtn" class="btn ghost" type="button">Clear Signature</button>
+            </div>
+            <div id="profileSignaturePreview" class="signature-preview">No signature added</div>
+          </label>
           <button class="btn primary" type="submit">Save Profile</button>
           <p id="profileMessage" class="message"></p>
         </form>
@@ -124,11 +132,21 @@
           </label>
           <label>
             New Password
-            <input id="newPassword" type="password" autocomplete="new-password" minlength="6" />
+            <div class="password-input-wrapper">
+              <input id="newPassword" type="password" autocomplete="new-password" minlength="6" />
+              <button class="password-toggle" type="button" data-toggle-password="newPassword" title="Show password">
+                <span class="material-symbols-outlined">visibility_off</span>
+              </button>
+            </div>
           </label>
           <label>
             Confirm Password
-            <input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" />
+            <div class="password-input-wrapper">
+              <input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" />
+              <button class="password-toggle" type="button" data-toggle-password="confirmPassword" title="Show password">
+                <span class="material-symbols-outlined">visibility_off</span>
+              </button>
+            </div>
           </label>
           <button class="btn primary" type="submit">Save Login Details</button>
           <p id="passwordMessage" class="message"></p>
@@ -153,7 +171,12 @@
       </label>
       <label>
         Password
-        <input id="newUserPassword" type="password" minlength="6" required />
+        <div class="password-input-wrapper">
+          <input id="newUserPassword" type="password" minlength="6" required />
+          <button class="password-toggle" type="button" data-toggle-password="newUserPassword" title="Show password">
+            <span class="material-symbols-outlined">visibility_off</span>
+          </button>
+        </div>
       </label>
       <label>
         Email
@@ -165,4 +188,47 @@
       <p id="addUserMessage" class="message"></p>
     </div>
   </form>
+</div>
+
+<div id="signatureModal" class="invoice-modal-backdrop hidden">
+  <div class="invoice-modal signature-modal" role="dialog" aria-modal="true" aria-labelledby="signatureModalTitle">
+    <div class="invoice-modal-head">
+      <div class="invoice-modal-title-wrap">
+        <h3 id="signatureModalTitle">Signature</h3>
+        <p class="invoice-modal-meta">Add a name, choose a style, upload or draw the signature, then save it to the profile.</p>
+      </div>
+      <button id="closeSignatureModalBtn" type="button" class="inline-btn">Close</button>
+    </div>
+    <div class="signature-modal-body">
+      <div class="grid two">
+        <label>
+          Signature Name
+          <input id="signatureNameInput" type="text" placeholder="Authorized Signatory" />
+        </label>
+        <label>
+          Signature Style
+          <select id="signatureStyleSelect">
+            <option value="script">Script</option>
+            <option value="classic">Classic</option>
+            <option value="bold">Bold</option>
+            <option value="italic">Italic</option>
+          </select>
+        </label>
+      </div>
+      <label>
+        Upload Signature
+        <input id="signatureUploadInput" type="file" accept="image/*" />
+      </label>
+      <div class="signature-live-preview">
+        <div class="signature-live-label">Live Preview</div>
+        <div id="signatureDesignPreview" class="signature-design-preview">No signature added</div>
+      </div>
+      <div class="signature-draw-label">Or draw signature below</div>
+      <canvas id="signatureCanvas" class="signature-canvas"></canvas>
+    </div>
+    <div class="signature-modal-actions">
+      <button id="clearSignatureCanvasBtn" type="button" class="btn ghost">Clear</button>
+      <button id="saveSignatureCanvasBtn" type="button" class="btn primary">Save Signature</button>
+    </div>
+  </div>
 </div>

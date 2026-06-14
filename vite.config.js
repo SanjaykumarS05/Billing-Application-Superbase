@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { cpSync, existsSync } from 'node:fs';
+import { cpSync, existsSync, rmSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 function copyPageTemplates() {
@@ -10,6 +10,9 @@ function copyPageTemplates() {
       const source = resolve('pages');
       const target = resolve('web-dist/pages');
       if (existsSync(source)) {
+        if (existsSync(target)) {
+          rmSync(target, { recursive: true, force: true });
+        }
         cpSync(source, target, { recursive: true });
       }
     }
