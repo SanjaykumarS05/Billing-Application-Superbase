@@ -5,7 +5,8 @@
       <div class="radio-toggle" id="settingsToggle">
         <label><input type="radio" name="settingsTab" value="profile" checked /> Profile</label>
         <label><input type="radio" name="settingsTab" value="tax" /> Tax</label>
-        <label id="usersSettingsTabLabel"><input type="radio" name="settingsTab" value="users" /> Users</label>
+        <label id="usersSettingsTabLabel" hidden><input type="radio" name="settingsTab" value="users" /> Users</label>
+        <label id="backupSettingsTabLabel" hidden><input type="radio" name="settingsTab" value="backup" /> Backup</label>
         <label><input type="radio" name="settingsTab" value="password" /> Password</label>
       </div>
 
@@ -119,6 +120,15 @@
             </table>
           </div>
           <p id="usersMessage" class="message"></p>
+        </div>
+      </div>
+
+      <div id="settingsBackup" class="settings-panel hidden">
+        <div class="stack compact">
+          <p>Backup Location: <strong>C:\GST Application\Backups</strong></p>
+          <p>Last Backup Date & Time: <span id="backupLastAt">No backup yet</span></p>
+          <button id="createBackupBtn" class="btn primary" type="button">Create Backup</button>
+          <p id="backupMessage" class="message"></p>
         </div>
       </div>
 

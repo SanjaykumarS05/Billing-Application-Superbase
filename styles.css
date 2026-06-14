@@ -752,6 +752,10 @@ thead th {
   font-weight: 700;
 }
 
+.radio-toggle label[hidden] {
+  display: none !important;
+}
+
 .settings-panel {
   margin-top: 14px;
 }
@@ -834,7 +838,7 @@ thead th {
 
 .invoice-modal {
   width: min(94vw, 860px);
-  max-height: 96vh;
+  min-height: 96vh;
   border-radius: 8px;
   border: 1px solid #dce5ef;
   background: #fff;

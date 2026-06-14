@@ -249,7 +249,7 @@ async function emptyUserState(user) {
 function normalizeUser(user, index = 0) {
   const id = Number(user?.id || index + 1);
   const username = String(user?.username || '').trim();
-  const isAdmin = username === ADMIN_USERNAME || user?.role === 'admin' || id === 1;
+  const isAdmin = id === 1;
   return {
     id,
     username,
@@ -323,7 +323,7 @@ function normalizeUnit(value) {
 }
 
 function isAdminUser(user = currentUser) {
-  return user?.role === 'admin' || user?.username === ADMIN_USERNAME;
+  return Number(user?.id || 0) === 1;
 }
 
 function userDocId(user = currentUser) {
@@ -373,6 +373,19 @@ async function saveRemoteState(stateId, state) {
   }
 }
 
+async function loadAllRemoteStates() {
+  const { data, error } = await supabase
+    .from(supabaseTableName)
+    .select('id,data,updated_at')
+    .order('id', { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return Array.isArray(data) ? data : [];
+}
+
 async function loadAuthState() {
   if (authStateCache) {
     return authStateCache;
@@ -406,7 +419,7 @@ async function loadState() {
     return stateCache;
   }
 
-  const activeUser = currentUser || (await loadAuthState()).users.find((user) => user.username === ADMIN_USERNAME);
+  const activeUser = currentUser || (await loadAuthState()).users.find((user) => Number(user.id) === 1);
   if (!activeUser) {
     throw new Error('Please login again.');
   }
@@ -713,7 +726,6 @@ function renderInvoicePage({
         <div class="footer-note">This is a Computer Generated Invoice</div>
       `
     : `
-        <div class="page-continued">Continued on next page</div>
       `;
 
   return `
@@ -1827,16 +1839,28 @@ export const billingApi = {
   },
 
   async createBackup() {
-    const state = await loadState();
-    state.settings.backupLastAt = new Date().toISOString();
-    await saveState(state);
-    const fileName = `gst_billing_backup_${state.settings.backupLastAt.replace(/[-:.]/g, '').slice(0, 15)}.json`;
-    downloadTextFile(fileName, JSON.stringify(state, null, 2), 'application/json;charset=utf-8');
+    if (!isAdminUser()) {
+      return { success: false, message: 'Only admin can create backups.' };
+    }
+    const state = await loadAuthState();
+    const backupLastAt = new Date().toISOString();
+    state.settings.backupLastAt = backupLastAt;
+    await saveAuthState(state);
+
+    const tableRows = await loadAllRemoteStates();
+    const headers = ['id', 'updated_at', 'data_json'];
+    const csvRows = tableRows.map((row) => [
+      escapeCsv(row.id),
+      escapeCsv(row.updated_at || ''),
+      escapeCsv(JSON.stringify(row.data ?? {}))
+    ].join(','));
+    const fileName = `gst_billing_backup_${backupLastAt.replace(/[-:.]/g, '').slice(0, 15)}.csv`;
+    downloadTextFile(fileName, `\uFEFF${[headers.join(','), ...csvRows].join('\n')}`, 'text/csv;charset=utf-8');
     return {
       success: true,
       backupPath: fileName,
       backupZipPath: fileName,
-      backupLastAt: state.settings.backupLastAt,
+      backupLastAt,
       mailSent: false,
       mailMessage: 'Web backup downloaded in the browser.'
     };

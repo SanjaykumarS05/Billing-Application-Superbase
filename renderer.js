@@ -243,6 +243,7 @@ const passwordMessage = document.getElementById('passwordMessage');
 const passwordSaveBtn = passwordForm?.querySelector('button[type="submit"]');
 let passwordMessageTimer = null;
 const usersSettingsTabLabel = document.getElementById('usersSettingsTabLabel');
+const backupSettingsTabLabel = document.getElementById('backupSettingsTabLabel');
 const settingsUsersPanel = document.getElementById('settingsUsers');
 const addUserBtn = document.getElementById('addUserBtn');
 const usersTableBody = document.getElementById('usersTableBody');
@@ -1614,7 +1615,7 @@ window.addEventListener('popstate', () => {
 });
 
 function isCurrentUserAdmin() {
-  return currentUser?.role === 'admin' || currentUser?.username === 'admin';
+  return Number(currentUser?.id || 0) === 1;
 }
 
 function selectSettingsTab(tabName) {
@@ -1637,8 +1638,26 @@ function selectSettingsTab(tabName) {
 
 function updateUsersAccess() {
   const isAdmin = isCurrentUserAdmin();
-  usersSettingsTabLabel?.classList.toggle('hidden', !isAdmin);
+  const usersRadio = document.querySelector('input[name="settingsTab"][value="users"]');
+  const backupRadio = document.querySelector('input[name="settingsTab"][value="backup"]');
+  const usersLabel = usersRadio?.closest('label') || usersSettingsTabLabel;
+  const backupLabel = backupRadio?.closest('label') || backupSettingsTabLabel;
+  if (usersLabel) {
+    usersLabel.hidden = !isAdmin;
+    usersLabel.style.display = isAdmin ? '' : 'none';
+  }
+  if (backupLabel) {
+    backupLabel.hidden = !isAdmin;
+    backupLabel.style.display = isAdmin ? '' : 'none';
+  }
+  if (usersRadio) {
+    usersRadio.disabled = !isAdmin;
+  }
+  if (backupRadio) {
+    backupRadio.disabled = !isAdmin;
+  }
   settingsUsersPanel?.classList.toggle('hidden', !isAdmin);
+  settingsPanels.backup?.classList.toggle('hidden', !isAdmin);
   addUserModal?.classList.add('hidden');
 
   if (!isAdmin) {
@@ -1646,8 +1665,8 @@ function updateUsersAccess() {
     if (usersTableBody) {
       usersTableBody.innerHTML = '';
     }
-    const usersRadio = document.querySelector('input[name="settingsTab"][value="users"]');
-    if (usersRadio?.checked) {
+    const backupRadioChecked = document.querySelector('input[name="settingsTab"][value="backup"]');
+    if (usersRadio?.checked || backupRadioChecked?.checked) {
       selectSettingsTab('profile');
     }
   }
@@ -2740,7 +2759,7 @@ pageButtons.forEach((button) => {
 
 settingsRadio.forEach((radio) => {
   radio.addEventListener('change', async () => {
-    if (radio.value === 'users' && !isCurrentUserAdmin()) {
+    if ((radio.value === 'users' || radio.value === 'backup') && !isCurrentUserAdmin()) {
       selectSettingsTab('profile');
       return;
     }
